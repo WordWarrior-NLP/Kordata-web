@@ -16,7 +16,7 @@ class Entity(Base):
 
 class Event(Base):
     __tablename__ = "Event"
-    cid = Column(Integer, nullable=False, primary_key=True)
+    cid = Column(Integer, nullable=False, primary_key=True, autoincrement=True)
     name = Column(String(30), nullable=False)
     valid = Column(Boolean, nullable=False, default=1)
     created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
@@ -53,8 +53,8 @@ class News(Base):
 
 class NewsCluster(Base):
     __tablename__ = "NewsCluster"
-    nc_id = Column(Integer, nullable=False, autoincrement=True)
-    datetime = Column(TIMESTAMP, nullable=False)
+    nc_id = Column(Integer, nullable=False, autoincrement=True, primary_key=True)
+    datetime = Column(DateTime, nullable=False)
     valid = Column(Boolean, nullable=False, default=1)
     created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
     updated_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
@@ -63,13 +63,14 @@ class NewsCluster(Base):
 
 class NewsMainTitle(Base):
     __tablename__ = "NewsMainTitle"
-    nt_id = Column(Integer, nullable=False, autoincrement=True)
+    nt_id = Column(Integer, nullable=False, autoincrement=True, primary_key=True)
     title = Column(Text, nullable=False)
     created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
     updated_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
     nc_id = Column(Integer, ForeignKey('NewsCluster.nc_id'), nullable=False)
     cid = Column(Integer, ForeignKey('Event.cid'), nullable=True)
     valid = Column(Boolean, nullable=False, default=1)
+    datetime = Column(Date, nullable=False)
 
 class NewsSocial(Base):
     __tablename__ = "NewsSocial"
@@ -99,4 +100,6 @@ class Sentiment(Base):
     created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
     updated_at = Column(TIMESTAMP, nullable=False,
                         server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
+    nid = Column(Integer, nullable=True)
+    nc_id = Column(Integer, nullable=True)
 # ---------------------------------------------------------------------------------------
