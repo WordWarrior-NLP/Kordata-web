@@ -7,7 +7,7 @@ from internal.schema import *
 
 router = APIRouter(prefix="/api/events", tags=["event"])
 
-@router.get("/list", status_code=status.HTTP_200_OK)
+@router.get("/list", response_model=List[EventOut], status_code=status.HTTP_200_OK)
 async def event_list(
         # skip: int | None = 0,
         # limit: int | None = 10,

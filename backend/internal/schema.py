@@ -45,7 +45,7 @@ class EventOut(defaultClass):
     cid : int
     name : str
     datetime: datetime.date
-    update_datetime : datetime.date
+    update_datetime : datetime.date | None = None
     nc_id : str
 
 
