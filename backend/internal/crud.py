@@ -6,6 +6,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.inspection import inspect
 from datetime import datetime, time
 from typing import Dict, Any
+import ast
 
 
 def filter_by_period(*,
@@ -64,6 +65,16 @@ def orders_by_query(query, model, o):
             continue
     return query
 
+## 뉴스ID 목록의 STRING을 ID 리스트로 변환
+def extract_nid(str_list : list):
+    nid_list = []
+
+    for item in str_list:
+        nested_list = ast.literal_eval(item[0])
+        nid_list.extend(nested_list)
+
+    return nid_list
+
 # 명시적 외래키 값 존재 확인
 # 성능 최적화 또는 자세한 오류 처리와 같이 데이터를 삽입하기 전에 외래 키 값의 존재를 확인해야 하는 특정 요구 사항이 있는 경우
 def get_referenced_table_and_fk(model):
@@ -88,7 +99,6 @@ def valid_referenced_key(model, item, db):
                     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     return True
 
-# TODO : ADMIN GET BOOK-INFO에 대한 함수 정의
 
 # get the item by primary key
 def get_item_by_id(*,
