@@ -1,19 +1,36 @@
 <script>
-    let question_list = []
+    import CardImage from "../components/CardImage.svelte";
+    import CardText from "../components/CardText.svelte";
+    import Clients from "../components/Clients.svelte";
+    import Footer from "../components/Footer.svelte";
+    import Masthead from "../components/Masthead.svelte";
+    import Navbar from "../components/Navbar.svelte";
+    import Profile from "../components/Profile.svelte";
+    import Timeline from "../components/Timeline.svelte";
+    import fastapi from "../lib/api"
 
-    function get_question_list() {
-        fetch("http://127.0.0.1:8000/api/question/list").then((response) => {
-            response.json().then((json) => {
-                question_list = json
-            })
+    let event_list = []
+
+    function get_event_list() {
+        fastapi('get', '/api/events/list', {}, (json) => {
+            event_list = json
         })
     }
 
-    get_question_list()
+    get_event_list()
 </script>
 
+<Navbar/>
+<Masthead/>
+<CardText/>
+<CardImage/>
+<!-- TODO event_list를 CardImage의 변수로 만들기 -->
 <ul>
-    {#each question_list as question}
-        <li>{question.subject}</li>
+    {#each event_list as event}
+        <li>{event.name}</li>
     {/each}
 </ul>
+<Timeline/>
+<Profile/>
+<Clients/>
+<Footer/>
