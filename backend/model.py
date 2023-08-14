@@ -7,13 +7,14 @@ from sqlalchemy.orm import relationship
 class Entity(Base):
     __tablename__ = "Entity"
     eid = Column(Integer, nullable=False, autoincrement=True, primary_key=True)
-    name = Column(String(30), nullable=True)
-    label = Column(Integer, nullable=True)
+    name = Column(String(30), nullable=False)
+    label = Column(String(30), nullable=False)
+    desc = Column(String(30), nullable=False)
+    main_word = Column(Boolean, nullable=True, default=0)
     created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
     updated_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
-    cid = Column(Integer, ForeignKey('Event.cid'), nullable=True)
     nc_id = Column(Integer, ForeignKey('NewsCluster.nc_id'), nullable=False)
-
+    valid = Column(Boolean, nullable=False, default=1)
 class Event(Base):
     __tablename__ = "Event"
     cid = Column(Integer, nullable=False, primary_key=True, autoincrement=True)
@@ -21,12 +22,12 @@ class Event(Base):
     valid = Column(Boolean, nullable=False, default=1)
     created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
     updated_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
-    nc_id = Column(text, nullable=False)
+    nc_id = Column(Text, nullable=False)
 
 class EventKeyword(Base):
     __tablename__ = "EventKeyword"
     ck_id = Column(Integer, nullable=False, autoincrement=True, primary_key=True)
-    keyword = Column(String(20), nullable=True)
+    keyword = Column(String(20), nullable=False)
     cid = Column(Integer, ForeignKey('Event.cid'), nullable=True)
     created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
     updated_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
@@ -50,27 +51,30 @@ class News(Base):
     valid = Column(Boolean, nullable=False, default=1)
     photo = Column(Boolean, nullable=True)
     nc_id = Column(Integer, ForeignKey('NewsCluster.nc_id'), nullable=True)
+    pre_title = Column(Text, nullable=False)
 
 class NewsCluster(Base):
     __tablename__ = "NewsCluster"
     nc_id = Column(Integer, nullable=False, autoincrement=True, primary_key=True)
     datetime = Column(DateTime, nullable=False)
-    valid = Column(Boolean, nullable=False, default=1)
-    created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
-    updated_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
     rank = Column(Integer, nullable=False)
     cid = Column(Integer, ForeignKey('Event.cid'), nullable=True)
+    keyword = Column(Text, nullable=False)
+    created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
+    updated_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
+    valid = Column(Boolean, nullable=False, default=1)
 
 class NewsMainTitle(Base):
     __tablename__ = "NewsMainTitle"
     nt_id = Column(Integer, nullable=False, autoincrement=True, primary_key=True)
     title = Column(Text, nullable=False)
-    created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
-    updated_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
     nc_id = Column(Integer, ForeignKey('NewsCluster.nc_id'), nullable=False)
     cid = Column(Integer, ForeignKey('Event.cid'), nullable=True)
-    valid = Column(Boolean, nullable=False, default=1)
     datetime = Column(Date, nullable=False)
+    created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
+    updated_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
+    valid = Column(Boolean, nullable=False, default=1)
+
 
 class NewsSocial(Base):
     __tablename__ = "NewsSocial"
@@ -85,21 +89,32 @@ class NewsSocial(Base):
     reporter = Column(String(30), nullable=True)
     datetime = Column(TIMESTAMP, nullable=False)
     strtime = Column(String(30), nullable=False)
-    created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
-    updated_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
     photo = Column(Boolean, nullable=True)
     nc_id = Column(Integer, ForeignKey('NewsCluster.nc_id'), nullable=True)
-
+    created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
+    updated_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
+    valid = Column(Boolean, nullable=False, default=1)
 
 class Sentiment(Base):
     __tablename__ = 'Sentiment'
     sid = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
-    sentence_id = Column(Integer, nullable=False)
     polarity = Column(DECIMAL, nullable=False)
     eid = Column(Integer, ForeignKey('Entity.eid'), nullable=False)
+    nid = Column(Integer, ForeignKey('News.nid'), nullable=True)
+    nc_id = Column(Integer, ForeignKey('NewsCluster.nc_id'), nullable=True)
     created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
     updated_at = Column(TIMESTAMP, nullable=False,
                         server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
-    nid = Column(Integer, nullable=True)
-    nc_id = Column(Integer, nullable=True)
+    valid = Column(Boolean, nullable=False, default=1)
+
+class Sentence(Base):
+    __tablename__ = 'Sentence'
+    sentence_id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
+    polarity = Column(DECIMAL, nullable=False)
+    eid = Column(Integer, ForeignKey('Entity.eid'), nullable=False)
+    nid = Column(Integer, ForeignKey('News.nid'), nullable=False)
+    created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
+    updated_at = Column(TIMESTAMP, nullable=False,
+                        server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
+    valid = Column(Boolean, nullable=False, default=1)
 # ---------------------------------------------------------------------------------------
