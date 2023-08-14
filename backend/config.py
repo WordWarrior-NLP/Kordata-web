@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 import os
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 
 load_dotenv() # take environment variables from .env.
 

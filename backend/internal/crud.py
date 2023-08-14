@@ -1,4 +1,3 @@
-from custom_exception import *
 from fastapi import status, HTTPException
 from sqlalchemy import and_
 from sqlalchemy.exc import IntegrityError
@@ -7,6 +6,7 @@ from sqlalchemy.inspection import inspect
 from datetime import datetime, time
 from typing import Dict, Any
 import ast
+from internal.custom_exception import *
 
 
 def filter_by_period(*,
@@ -156,13 +156,13 @@ def create_item(model, req, db):
 # GET
 def get_list_of_item(*,
                      model,
-                     skip: int,
-                     limit: int,
+                     # skip: int,
+                     # limit: int,
                      # use_update_at: bool | None = False,
-                     user_mode: bool | None = True,
+                     # user_mode: bool | None = True,
                      q,
                      # p,
-                     o,
+                     # o,
                      init_query: Any | None = None,
                      db,
                      ):
@@ -170,10 +170,10 @@ def get_list_of_item(*,
         init_query = db.query(model)
     query = filters_by_query(init_query, model, q)
     # query = filter_by_period(query=query, model=model, p=p, use_updated_at=use_update_at)
-    if user_mode:
-        query = query.filter(model.valid)
-    query = orders_by_query(query, model, o)
-    result = query.offset(skip).limit(limit).all()
+    # if user_mode:
+    result = query.filter(model.valid).all()
+    # query = orders_by_query(query, model, o)
+    # result = query.offset(skip).limit(limit).all()
     if not result:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
 
