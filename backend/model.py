@@ -15,6 +15,9 @@ class Entity(Base):
     updated_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
     nc_id = Column(Integer, ForeignKey('NewsCluster.nc_id'), nullable=False)
     valid = Column(Boolean, nullable=False, default=1)
+    datetime = Column(Date, nullable=False)
+
+
 class Event(Base):
     __tablename__ = "Event"
     cid = Column(Integer, nullable=False, primary_key=True, autoincrement=True)
@@ -23,6 +26,9 @@ class Event(Base):
     created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
     updated_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
     nc_id = Column(Text, nullable=False)
+    datetime = Column(Date, nullable=False)
+    update_datetime = Column(Date, nullable=True)
+
 
 class EventKeyword(Base):
     __tablename__ = "EventKeyword"
@@ -44,7 +50,7 @@ class News(Base):
     pre_main_text = Column(Text, nullable=False)
     summary = Column(Text, nullable=False)
     reporter = Column(String(30), nullable=True)
-    datetime = Column(TIMESTAMP, nullable=False)
+    datetime = Column(DateTime, nullable=False)
     strtime = Column(String(30), nullable=False)
     created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
     updated_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
@@ -106,6 +112,8 @@ class Sentiment(Base):
     updated_at = Column(TIMESTAMP, nullable=False,
                         server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
     valid = Column(Boolean, nullable=False, default=1)
+    datetime = Column(Date, nullable=False)
+
 
 class Sentence(Base):
     __tablename__ = 'Sentence'
@@ -117,4 +125,6 @@ class Sentence(Base):
     updated_at = Column(TIMESTAMP, nullable=False,
                         server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
     valid = Column(Boolean, nullable=False, default=1)
+    datetime = Column(Date, nullable=False)
+
 # ---------------------------------------------------------------------------------------
