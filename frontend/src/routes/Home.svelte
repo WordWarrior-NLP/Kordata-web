@@ -11,9 +11,8 @@
             event_list = json
         })
     }
-
     get_event_list()
 </script>
 <Masthead/>
 <CardText/>
-<CardImage {event_list}/>
+<CardImage event_list={event_list}/>
