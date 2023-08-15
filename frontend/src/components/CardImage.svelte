@@ -1,7 +1,8 @@
 <script>
     export let event_list
-    let portfolio_item = [...event_list]
+    import {link} from 'svelte-spa-router'
 
+    // let portfolio_item = [...event_list]
 
 </script>
 
@@ -13,10 +14,10 @@
             <h3 class="section-subheading text-muted">Lorem ipsum dolor sit amet consectetur.</h3>
         </div>
         <div class="row">
-            {#each portfolio_item as item, index}
+            {#each event_list as item, index}
                 <div class="col-lg-4 col-sm-6 mb-4">
                     <div class="portfolio-item">
-                        <a class="portfolio-link" data-bs-toggle="modal" href={`#portfolioModal${index+1}`}>
+                        <a use:link href="/events/:{item.cid}" class="portfolio-link" >
                             <div class="portfolio-hover">
                                 <div class="portfolio-hover-content"><i class="fas fa-plus fa-3x"></i></div>
                             </div>
