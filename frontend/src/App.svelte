@@ -11,6 +11,5 @@
     '*' : NotFound,
   }
 </script>
-<Navbar/>
 <Router {routes}/>
 <Footer/>
