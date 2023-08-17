@@ -52,18 +52,18 @@ def filters_by_query(query, model, q):
 
 
 # order_by 간소화 함수
-def orders_by_query(query, model, o):
-    for attr, value in o.__dict__.items():
-        try:
-            if value is None:
-                continue
-            if value is False:
-                query = query.order_by(getattr(model, attr).asc())
-            if value is True:
-                query = query.order_by(getattr(model, attr).desc())
-        except AttributeError:
-            continue
-    return query
+# def orders_by_query(query, model, o):
+#     for attr, value in o.__dict__.items():
+#         try:
+#             if value is None:
+#                 continue
+#             if value is False:
+#                 query = query.order_by(getattr(model, attr).asc())
+#             if value is True:
+#                 query = query.order_by(getattr(model, attr).desc())
+#         except AttributeError:
+#             continue
+#     return query
 
 ## 뉴스ID 목록의 STRING을 ID 리스트로 변환
 def extract_nid(str_list : list):
@@ -156,29 +156,20 @@ def create_item(model, req, db):
 # GET
 def get_list_of_item(*,
                      model,
-                     # skip: int,
-                     # limit: int,
-                     # use_update_at: bool | None = False,
-                     # user_mode: bool | None = True,
+                     skip: int | None = 0,
+                     limit: int | None = 10,
                      q,
-                     # p,
-                     # o,
                      init_query: Any | None = None,
                      db,
                      ):
     if init_query is None:
         init_query = db.query(model)
     query = filters_by_query(init_query, model, q)
-    # query = filter_by_period(query=query, model=model, p=p, use_updated_at=use_update_at)
-    # if user_mode:
-    result = query.filter(model.valid).all()
-    # query = orders_by_query(query, model, o)
-    # result = query.offset(skip).limit(limit).all()
+    query = query.filter(model.valid).order_by(model.update_datetime.desc())
+    result = query.offset(skip).limit(limit).all()
     if not result:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-
     db.close()
-
     return result
 
 
