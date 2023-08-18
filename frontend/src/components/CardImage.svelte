@@ -18,9 +18,13 @@
                             <div class="portfolio-hover">
                                 <div class="portfolio-hover-content"><i class="fas fa-plus fa-3x"></i></div>
                             </div>
-                            <img class="img-fluid" src={`src/assets/img/portfolio/${index + 1 <= 6 ? index + 1 : 1}.jpg`} alt={item.name} />
+                            <div class="portfolio-caption-heading">
+                                {index+1}
+                            </div>
                             <div class="portfolio-caption">
-                                <div class="portfolio-caption-heading">{item.name}</div>
+                                {#each item.name as name}
+                                    <div class="portfolio-caption-heading">#{name}</div>
+                                {/each}
                                 <div class="portfolio-caption-subheading text-muted">{item.datetime} ~ </div>
                                 <!--TODO : 사건 키워드 3개 또는 메인 기사 제목 삽입-->
                             </div>
