@@ -15,7 +15,7 @@
     get_event_list()
 </script>
 
-<Navbar></Navbar>
+<Navbar/>
 <Masthead/>
 <CardText/>
 <CardImage event_list={event_list}/>
