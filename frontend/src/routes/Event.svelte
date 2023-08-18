@@ -1,4 +1,8 @@
-<section class="page-section bg-light" id="event">
+<script>
+    import Sidebar from "../components/Sidebar.svelte";
+    let sideActive = false;
+</script>
+<section class="bg-light" id="event">
   <div class="d-flex h-100" id="wrapper" class:toggled={sideActive}>
     <!-- Sidebar -->
      <Sidebar></Sidebar>
@@ -14,7 +18,7 @@
                         <li class="nav-item active"><a class="nav-link" href="#!">Home</a></li>
                         <li class="nav-item"><a class="nav-link" href="#!">Link</a></li>
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Dropdown</a>
+                            <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#app" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Dropdown</a>
                             <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                                 <a class="dropdown-item" href="#!">Action</a>
                                 <a class="dropdown-item" href="#!">Another action</a>
@@ -43,12 +47,7 @@
 </section>
 
 <style>
-  #event {
-    padding-top: 0.5rem;
-  }
+    #event {
+        padding: 0;
+    }
 </style>
-
-<script>
-    import Sidebar from "../components/Sidebar.svelte";
-    let sideActive=false;
-</script>
