@@ -1,12 +1,12 @@
 from pydantic import BaseModel
 from typing import List
 from internal.custom_exception import InvalidDateFormatError
-import datetime
+import datetime as dt
 
 class defaultClass(BaseModel):
     valid : bool
-    created_at : datetime.datetime
-    updated_at : datetime.datetime
+    created_at : dt.datetime
+    updated_at : dt.datetime
     class Config:
         from_attributes = True
 
@@ -17,7 +17,7 @@ class NewsOut (defaultClass):
     main_text : str
     summary : str
     reporter : str
-    datetime : datetime.datetime
+    datetime : dt.datetime
     section : int
 
 class NewsQuery :
@@ -43,9 +43,11 @@ class EventQuery :
 
 class EventOut(defaultClass):
     cid : int
-    name : str
-    datetime: datetime.date
-    update_datetime : datetime.date | None = None
-    nc_id : str
+    name : List[str]
+    datetime: dt.date
+    update_datetime : dt.date
 
+class EventWithMainTitle(EventOut):
+    newest_main_title: str
+    name: List[str]
 

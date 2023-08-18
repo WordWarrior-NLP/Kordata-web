@@ -43,11 +43,9 @@ def filters_by_query(query, model, q):
             if isinstance(value, str):
                 query = query.filter(getattr(model, attr).ilike(f"%{value}%"))
             elif isinstance(value, (int, bool)):
-                if attr != 'rating':
-                    query = query.filter(getattr(model, attr) == value)
-                else:
-                    filter_expression = and_(value + 1 > getattr(model, attr), getattr(model, attr) >= value)
-                    query = query.filter(filter_expression)
+                query = query.filter(getattr(model, attr) == value)
+
+
     return query
 
 
@@ -108,10 +106,7 @@ def get_item_by_id(*,
                    user_mode: bool | None = True):
     pk = inspect(model).primary_key[0].name
     try:
-        if user_mode:
-            item = db.query(model).filter_by(**{pk: index, 'valid': user_mode}).one()
-        else:
-            item = db.query(model).filter_by(**{pk: index}).one()
+        item = db.query(model).filter_by(**{pk: index, "valid": True}).one()
     except NoResultFound:
         raise ItemKeyValidationError(detail=(f"{pk}", index))
     finally:
@@ -165,7 +160,10 @@ def get_list_of_item(*,
     if init_query is None:
         init_query = db.query(model)
     query = filters_by_query(init_query, model, q)
-    query = query.filter(model.valid).order_by(model.update_datetime.desc())
+    if hasattr(model, 'update_datetime'):
+        query = query.order_by(model.update_datetime.desc())
+    elif hasattr(model, 'datetime'):
+        query = query.order_by(model.datetime.desc())
     result = query.offset(skip).limit(limit).all()
     if not result:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")

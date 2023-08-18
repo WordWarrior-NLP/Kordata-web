@@ -25,19 +25,22 @@ class Event(Base):
     valid = Column(Boolean, nullable=False, default=1)
     created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
     updated_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
-    nc_id = Column(Text, nullable=False)
+    # nc_id = Column(Text, nullable=False)
     datetime = Column(Date, nullable=False)
     update_datetime = Column(Date, nullable=True)
 
+    main_titles = relationship("NewsMainTitle")
+
 
 class EventKeyword(Base):
-    __tablename__ = "EventKeyword"
+    __tablename__ = "backup_event_keyword"
     ck_id = Column(Integer, nullable=False, autoincrement=True, primary_key=True)
     keyword = Column(String(20), nullable=False)
     cid = Column(Integer, ForeignKey('Event.cid'), nullable=True)
     created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
     updated_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
     valid = Column(Boolean, nullable=False, default=1)
+    datetime = Column(Date, nullable=False)
 
 class News(Base):
     __tablename__ = "News"
