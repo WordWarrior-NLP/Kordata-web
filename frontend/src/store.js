@@ -3,4 +3,4 @@
 import { writable } from 'svelte/store'
 export default writable(0)
 
-export let storeName = writable('')
+export let previousLocation = writable('')
