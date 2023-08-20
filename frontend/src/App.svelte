@@ -1,15 +1,12 @@
 <script>
-  import Router from 'svelte-spa-router'
-  import Home from "./routes/Home.svelte"
+  import { Router, Route } from "svelte-routing"; 
+  import Home from "./routes/Home.svelte";
   import Footer from "./components/Footer.svelte";
   import NotFound from './routes/NotFound.svelte';
-  import Event from './routes/Event.svelte';
+  import Diagram from './routes/Diagram.svelte';
+  import Events from './routes/Events.svelte';
   import {previousLocation} from './store'
-  const routes = {
-    '/': Home,
-    "/events/:id" : Event,
-    '*' : NotFound,
-  }
+  export let url = "";
 
   function routeLoaded(event){
     let currentLocation = event.detail.location;
@@ -20,5 +17,10 @@
   }
 
 </script>
-<Router {routes} on:routeLoaded={routeLoaded}/>
+<Router url={url}>
+  <Route path = "/"><Home/></Route>
+  <Route path = "/events" component="{Events}"on:routeLoaded={routeLoaded} ></Route>
+  <Route path = "/events/:cid" component="{Diagram}" on:routeLoaded={routeLoaded}></Route>
+  <Route path = "*" component="{NotFound}"></Route>
+</Router>
 <Footer/>
