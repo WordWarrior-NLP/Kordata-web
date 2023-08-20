@@ -43,9 +43,17 @@ class EventOut(defaultClass):
     name : List[str]
     datetime: dt.date
     update_datetime : dt.date
+    nc_id : int
+
+class MainTitleOut(defaultClass):
+    title: str
+    nc_id : int
+    datetime : dt.date
+    nt_id : int
 
 class EventWithMainTitle(EventOut):
-    newest_main_title: str
+    main_titles : List[MainTitleOut]
+
 
 class ClusterOut(defaultClass):
     cid : int

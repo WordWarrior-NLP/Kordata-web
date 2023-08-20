@@ -29,19 +29,20 @@ async def get_event_list(
 
 @router.get("/with_title", response_model=List[EventWithMainTitle], status_code=status.HTTP_200_OK)
 async def event_list(
-        skip: int | None = 0,
-        limit: int | None = 10,
         db: Session = Depends(get_db)
 ):
     try:
         result = db.query(Event) \
-            .options(joinedload(Event.main_titles)
-                     .load_only(NewsMainTitle.title, NewsMainTitle.nc_id, NewsMainTitle.datetime, )) \
+            .options(joinedload(Event.main_titles)\
+                     .load_only(NewsMainTitle.title,
+                                NewsMainTitle.nc_id,
+                                NewsMainTitle.datetime
+                                )
+                    )\
             .order_by(Event.update_datetime.desc()) \
             .all()
-
         if result:
-            events_title_list = [res._asdict() for res in result]
+            events_title_list = [res.__dict__ for res in result]
             for event in events_title_list:
                 event["name"] = event["name"].split(",", 2)
             return events_title_list
@@ -70,7 +71,7 @@ async def get_cluster_list(
         if results:
             events_news_list = [res.__dict__ for res in results]
             for event in events_news_list:
-                for news in  event["news"]:
+                for news in event["news"]:
                     news.pid = convert_pid(news.pid)
             return events_news_list
         else:
