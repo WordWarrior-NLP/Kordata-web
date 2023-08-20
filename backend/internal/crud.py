@@ -64,14 +64,28 @@ def filters_by_query(query, model, q):
 #     return query
 
 ## 뉴스ID 목록의 STRING을 ID 리스트로 변환
-def extract_nid(str_list : list):
-    nid_list = []
-
-    for item in str_list:
-        nested_list = ast.literal_eval(item[0])
-        nid_list.extend(nested_list)
-
+def extract_nid(nid_string : list):
+    nid_list = ast.literal_eval(nid_string)
+    nid_list = [int(nid) for nid in nid_list]
     return nid_list
+
+
+def convert_pid(pid : int):
+    press_id = {
+        32: '경향신문',
+        5: '국민일보',
+        20 : '동아일보',
+        21 : '문화일보',
+        81 : '서울신문',
+        22 : '세계일보',
+        23 : '조선일보',
+        25 : '중앙일보',
+        28 :'한겨레',
+        469 : '한국일보'
+    }
+
+    return press_id[pid]
+
 
 # 명시적 외래키 값 존재 확인
 # 성능 최적화 또는 자세한 오류 처리와 같이 데이터를 삽입하기 전에 외래 키 값의 존재를 확인해야 하는 특정 요구 사항이 있는 경우
