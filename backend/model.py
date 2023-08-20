@@ -13,11 +13,9 @@ class Entity(Base):
     main_word = Column(Boolean, nullable=True, default=0)
     created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
     updated_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
-    # nc_id = Column(Integer, ForeignKey('news_cluster.nc_id'), nullable=False)
+    nc_id = Column(Integer, ForeignKey('news_cluster.nc_id'), nullable=False)
     valid = Column(Boolean, nullable=False, default=1)
     datetime = Column(Date, nullable=False)
-    nc_id = Column(Integer, nullable=False)
-
 
 class Event(Base):
     __tablename__ = "event"
@@ -30,8 +28,8 @@ class Event(Base):
     datetime = Column(Date, nullable=False)
     update_datetime = Column(Date, nullable=True)
 
-    # main_titles = relationship("NewsMainTitle")
-
+    main_titles = relationship("NewsMainTitle", backref="event")
+    news_cluster = relationship("NewsCluster", back_populates="event")
 
 class News(Base):
     __tablename__ = "news"
@@ -67,17 +65,17 @@ class NewsCluster(Base):
     nid = Column(Text, nullable=False)
 
     news = relationship("News", back_populates="news_cluster")
+    event = relationship("Event", back_populates="news_cluster")
+
 class ClusterKeyword(Base):
     __tablename__ = "cluster_keyword"
     ck_id = Column(Integer, nullable=False, autoincrement=True, primary_key=True)
     keyword = Column(String(30), nullable=False)
-    # nc_id = Column(Integer, ForeignKey('news_cluster.nc_id'), nullable=False)
-    nc_id = Column(Integer, nullable=False)
+    nc_id = Column(Integer, ForeignKey('news_cluster.nc_id'), nullable=False)
     created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
     updated_at = Column(TIMESTAMP, nullable=False,
                         server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
     valid = Column(Boolean, nullable=False, default=1)
-    cid = Column(Integer, nullable=True)
 
 class NewsMainTitle(Base):
     __tablename__ = "news_main_title"
