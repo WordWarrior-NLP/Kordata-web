@@ -1,8 +1,6 @@
 from fastapi import status, HTTPException
-from sqlalchemy import and_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.inspection import inspect
 from datetime import datetime, time
 from typing import Dict, Any
 import ast
@@ -44,34 +42,18 @@ def filters_by_query(query, model, q):
                 query = query.filter(getattr(model, attr).ilike(f"%{value}%"))
             elif isinstance(value, (int, bool)):
                 query = query.filter(getattr(model, attr) == value)
-
-
     return query
 
 
-# order_by 간소화 함수
-# def orders_by_query(query, model, o):
-#     for attr, value in o.__dict__.items():
-#         try:
-#             if value is None:
-#                 continue
-#             if value is False:
-#                 query = query.order_by(getattr(model, attr).asc())
-#             if value is True:
-#                 query = query.order_by(getattr(model, attr).desc())
-#         except AttributeError:
-#             continue
-#     return query
-
 ## 뉴스ID 목록의 STRING을 ID 리스트로 변환
-def extract_nid(nid_string : list):
+def extract_nid(nid_string : str):
     nid_list = ast.literal_eval(nid_string)
     nid_list = [int(nid) for nid in nid_list]
     return nid_list
 
-
+# pid(int) -> press_name(str)
 def convert_pid(pid : int):
-    press_id = {
+    press_name = {
         32: '경향신문',
         5: '국민일보',
         20 : '동아일보',
@@ -84,7 +66,7 @@ def convert_pid(pid : int):
         469 : '한국일보'
     }
 
-    return press_id[pid]
+    return press_name[pid]
 
 
 # 명시적 외래키 값 존재 확인
@@ -104,11 +86,11 @@ def valid_referenced_key(model, item, db):
         if hasattr(item, attr):
             try:
                 refer = get_item_by_column(model=model, columns={attr: getattr(item, attr)}, mode=True, db=db)
-            except NoResultFound:
-                raise ForeignKeyValidationError((attr, item[attr]))
-            else:
                 if not refer:
                     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+            except Exception as e:
+                raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                                    detail=f"Internal server error : {e}")
     return True
 
 
@@ -116,13 +98,11 @@ def valid_referenced_key(model, item, db):
 def get_item_by_id(*,
                    model,
                    index: int,
-                   db,
-                   user_mode: bool | None = True):
-    pk = inspect(model).primary_key[0].name
+                   db):
     try:
-        item = db.query(model).filter_by(**{pk: index, "valid": True}).one()
-    except NoResultFound:
-        raise ItemKeyValidationError(detail=(f"{pk}", index))
+        item = db.query(model).get(index)
+        if not item:
+            raise ItemKeyValidationError(detail=("", index))
     finally:
         db.close()
     return item
@@ -141,26 +121,8 @@ def get_item_by_column(*,
                 query = query.filter(model.valid)
     if mode:
         result = query.all()
-        return result
-    return query
-
-
-
-# CREATE
-def create_item(model, req, db):
-    item = model(**req.dict())
-    try:
-        if valid_referenced_key(model, item, db):
-            db.add(item)
-            db.commit()
-            db.refresh(item)
-    except IntegrityError as e:
-        db.rollback()
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail=f"Fail to create the new {model} item. {str(e.orig)}")
-    finally:
-        db.close()
-    return item
+    else: result = query
+    return result
 
 # GET
 def get_list_of_item(*,
@@ -184,6 +146,21 @@ def get_list_of_item(*,
     db.close()
     return result
 
+# CREATE
+def create_item(model, req, db):
+    item = model(**req.dict())
+    try:
+        if valid_referenced_key(model, item, db):
+            db.add(item)
+            db.commit()
+            db.refresh(item)
+    except IntegrityError as e:
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=f"Fail to create the new {model} item. {str(e.orig)}")
+    finally:
+        db.close()
+    return item
 
 # update
 def update_item(*,

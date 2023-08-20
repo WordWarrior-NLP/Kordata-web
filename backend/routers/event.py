@@ -16,10 +16,10 @@ async def get_event_list(
 ):
     try:
         events_list = get_list_of_item(model=Event, db=db, skip=skip, limit=limit, q=q)
+        if events_list :
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
         for event in events_list:
             event.name = event.name.split(",", 2)
-    except NoResultFound :
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Internal server error : {e}")
     finally:
@@ -34,11 +34,11 @@ async def event_list(
         db: Session = Depends(get_db)
 ):
     try:
-        result = db.query(Event.cid, Event.name, Event.datetime, Event.update_datetime, NewsMainTitle.title.label("newest_main_title")) \
-            .join(NewsMainTitle, Event.cid == NewsMainTitle.cid) \
-            .filter(Event.update_datetime == NewsMainTitle.datetime) \
+        result = db.query(Event) \
+            .options(joinedload(Event.main_titles)
+                     .load_only(NewsMainTitle.title, NewsMainTitle.nc_id, NewsMainTitle.datetime, )) \
             .order_by(Event.update_datetime.desc()) \
-            .offset(skip).limit(limit).all()
+            .all()
 
         if result:
             events_title_list = [res._asdict() for res in result]
@@ -53,9 +53,8 @@ async def event_list(
         db.close()
 
 # Event ID로 뉴스 조회
-# /{cid}/list : sidebar 정보 : nid, pid(언론사 배열 필요), linkUrl, title
-# q 없으면 전체 클러스터 기사 조회
-# q에 nc_id, datetime로 뉴스 클러스터 노드 클릭시 해당 클러스터에 속한 기사만 select
+# TODO q 없으면 전체 클러스터 기사 조회
+#   q에 nc_id, datetime로 뉴스 클러스터 노드 클릭시 해당 클러스터에 속한 기사만 select
 @router.get("/{cid}/news/", response_model=List[EventWithNews], status_code=status.HTTP_200_OK)
 async def get_cluster_list(
         cid : int,
