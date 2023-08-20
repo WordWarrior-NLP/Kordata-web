@@ -17,9 +17,10 @@ async def get_event_list(
     try:
         events_list = get_list_of_item(model=Event, db=db, skip=skip, limit=limit, q=q)
         if events_list :
+            for event in events_list:
+                event.name = event.name.split(",", 2)
+        else :
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-        for event in events_list:
-            event.name = event.name.split(",", 2)
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Internal server error : {e}")
     finally:
@@ -27,7 +28,7 @@ async def get_event_list(
     return events_list
 
 
-@router.get("/{cid}/with_title", response_model=List[EventWithMainTitle], status_code=status.HTTP_200_OK)
+@router.get("/{cid}/with_title", response_model=EventWithMainTitle, status_code=status.HTTP_200_OK)
 async def event_list(
         cid : int,
         db: Session = Depends(get_db)
@@ -37,12 +38,10 @@ async def event_list(
             .options(joinedload(Event.main_titles).load_only(NewsMainTitle.title, NewsMainTitle.nc_id, NewsMainTitle.datetime))\
             .filter(Event.cid == cid) \
             .options(load_only(Event.nc_id, Event.update_datetime, Event.datetime, Event.cid, Event.name)) \
-            .all()
+            .first()
         if result:
-            events_title_list = [res.__dict__ for res in result]
-            for event in events_title_list:
-                event["name"] = event["name"].split(",", 2)
-            return events_title_list
+            result.name = result.name.split(",", 2)
+            return result
         else:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
     except Exception as e:

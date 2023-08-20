@@ -28,7 +28,7 @@ class Event(Base):
     datetime = Column(Date, nullable=False)
     update_datetime = Column(Date, nullable=True)
 
-    main_titles = relationship("NewsMainTitle", backref="event", order_by='NewsMainTitle.datetime.desc()')
+    main_titles = relationship("NewsMainTitle", backref="event", order_by='news_main_title.columns.datetime.desc()')
     news_cluster = relationship("NewsCluster", back_populates="event")
 
 class News(Base):
@@ -64,7 +64,7 @@ class NewsCluster(Base):
     valid = Column(Boolean, nullable=False, default=1)
     nid = Column(Text, nullable=False)
 
-    news = relationship("News", back_populates="news_cluster", order_by='News.datetime.desc()')
+    news = relationship("News", back_populates="news_cluster", order_by='news.columns.datetime.desc()')
     event = relationship("Event", back_populates="news_cluster")
 
 class ClusterKeyword(Base):
