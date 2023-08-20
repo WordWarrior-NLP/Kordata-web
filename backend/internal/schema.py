@@ -4,9 +4,6 @@ from internal.custom_exception import InvalidDateFormatError
 import datetime as dt
 
 class defaultClass(BaseModel):
-    valid : bool
-    created_at : dt.datetime
-    updated_at : dt.datetime
     class Config:
         from_attributes = True
 
@@ -14,11 +11,11 @@ class NewsOut (defaultClass):
     nid : int
     pid : int
     title : str
-    main_text : str
     summary : str
-    reporter : str
+    reporter : str | None
     datetime : dt.datetime
-    section : int
+    nc_id : int | None
+    linkUrl : str
 
 class NewsQuery :
     def __init__(self,
@@ -49,5 +46,18 @@ class EventOut(defaultClass):
 
 class EventWithMainTitle(EventOut):
     newest_main_title: str
-    name: List[str]
 
+class ClusterOut(defaultClass):
+    cid : int
+    nc_id : int
+    datetime : dt.date
+    rank : int
+
+class NewsSidebar (defaultClass):
+    nid: int
+    pid: str
+    title: str
+    linkUrl : str
+
+class EventWithNews(ClusterOut):
+    news : List[NewsSidebar]
