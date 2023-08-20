@@ -27,19 +27,16 @@ async def get_event_list(
     return events_list
 
 
-@router.get("/with_title", response_model=List[EventWithMainTitle], status_code=status.HTTP_200_OK)
+@router.get("/{cid}/with_title", response_model=List[EventWithMainTitle], status_code=status.HTTP_200_OK)
 async def event_list(
+        cid : int,
         db: Session = Depends(get_db)
 ):
     try:
         result = db.query(Event) \
-            .options(joinedload(Event.main_titles)\
-                     .load_only(NewsMainTitle.title,
-                                NewsMainTitle.nc_id,
-                                NewsMainTitle.datetime
-                                )
-                    )\
-            .order_by(Event.update_datetime.desc()) \
+            .options(joinedload(Event.main_titles).load_only(NewsMainTitle.title, NewsMainTitle.nc_id, NewsMainTitle.datetime))\
+            .filter(Event.cid == cid) \
+            .options(load_only(Event.nc_id, Event.update_datetime, Event.datetime, Event.cid, Event.name)) \
             .all()
         if result:
             events_title_list = [res.__dict__ for res in result]
@@ -49,7 +46,7 @@ async def event_list(
         else:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Internal server error : {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Internal server error:{e}")
     finally:
         db.close()
 
@@ -76,9 +73,8 @@ async def get_cluster_list(
             return events_news_list
         else:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Internal server error : {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Internal server error")
     finally:
         db.close()
 
