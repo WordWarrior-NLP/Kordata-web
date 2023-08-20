@@ -1,14 +1,12 @@
 <script>
   import { Link } from "svelte-routing";
   import Sidebar from "../components/Sidebar.svelte";
-
+  import fastapi from "../lib/api";   
+  import Graph from "../components/Graph.svelte";
   let sideActive = false;
 
   export let cid;
-  // let cid = parseInt(params.cid)
-  console.log(cid)
-  import fastapi from "../lib/api";    
-
+  
   let news_list = []
   function getNewsFromEvent() {
     return new Promise((resolve, reject) => {
@@ -30,6 +28,28 @@
 
   get_news_list()
 
+  function getMainTitleFromEvent() {
+    return new Promise((resolve, reject) => {
+      fastapi('get', '/api/events/' +cid+'/with_title', {}, (json) => {
+        resolve(json);
+        reject(json)
+      });
+    });
+  }
+  
+  let event_with_title = {}
+  async function get_main_titles() {
+      try {
+        let json = await getMainTitleFromEvent();
+        event_with_title = json;
+        console.log("Newest main title : " + event_with_title.main_titles[0].title)
+      } catch (error) {
+        console.error("Error fetching news:", error);
+      }
+    }
+
+  get_main_titles()
+  
 </script>
 <section class="bg-light" id="event">
   <div class="d-flex h-100" id="wrapper" class:toggled={sideActive}>
@@ -52,15 +72,7 @@
         </nav>
         <!-- Page content-->
         <div class="container-fluid">
-            <h1 class="mt-4">Simple Sidebar</h1>
-            <p>The starting state of the menu will appear collapsed on smaller screens, and will appear non-collapsed on larger screens. When toggled using the button below, the menu will change.</p>
-            <p>
-                Make sure to keep all page content within the
-                <code>#page-content-wrapper</code>
-                . The top navbar is optional, and just for demonstration. Just create an element with the
-                <code>#sidebarToggle</code>
-                ID which will toggle the menu when clicked.
-            </p>
+            <Graph event_with_title={event_with_title}></Graph>
         </div>
     </div>
   </div>
