@@ -14,8 +14,12 @@ class Entity(Base):
     created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
     updated_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
     nc_id = Column(Integer, ForeignKey('news_cluster.nc_id'), nullable=False)
+    nid = Column(Integer, ForeignKey('news.nid'), nullable=False)
     valid = Column(Boolean, nullable=False, default=1)
     datetime = Column(Date, nullable=False)
+
+    # sentences = relationship("Sentence", back_populates="entity")
+    # news_related = relationship("News", back_populates="news")
 
 class Event(Base):
     __tablename__ = "event"
@@ -29,7 +33,7 @@ class Event(Base):
     update_datetime = Column(Date, nullable=True)
 
     main_titles = relationship("NewsMainTitle", backref="event", order_by='news_main_title.columns.datetime.desc()')
-    news_cluster = relationship("NewsCluster", back_populates="event")
+    news_clusters = relationship("NewsCluster", back_populates="events")
 
 class News(Base):
     __tablename__ = "news"
@@ -65,7 +69,7 @@ class NewsCluster(Base):
     nid = Column(Text, nullable=False)
 
     news = relationship("News", back_populates="news_cluster", order_by='news.columns.datetime.desc()')
-    event = relationship("Event", back_populates="news_cluster")
+    entities = relationship("Entity", back_populates="news_clusters")
 
 class ClusterKeyword(Base):
     __tablename__ = "cluster_keyword"
@@ -113,12 +117,9 @@ class Sentiment(Base):
     __tablename__ = 'sentiment'
     sid = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
     polarity = Column(DECIMAL, nullable=False)
-    # eid = Column(Integer, ForeignKey('entity.eid'), nullable=False)
-    # nid = Column(Integer, ForeignKey('news.nid'), nullable=True)
-    # nc_id = Column(Integer, ForeignKey('news_cluster.nc_id'), nullable=True)
-    eid = Column(Integer, nullable=False)
-    nid = Column(Integer, nullable=True)
-    nc_id = Column(Integer, nullable=True)
+    eid = Column(Integer, ForeignKey('entity.eid'), nullable=False)
+    nid = Column(Integer, ForeignKey('news.nid'), nullable=False)
+    nc_id = Column(Integer, ForeignKey('news_cluster.nc_id'), nullable=False)
     created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
     updated_at = Column(TIMESTAMP, nullable=False,
                         server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
@@ -130,12 +131,13 @@ class Sentence(Base):
     __tablename__ = 'sentence'
     sentence_id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
     polarity = Column(DECIMAL, nullable=False)
-    # eid = Column(Integer, ForeignKey('entity.eid'), nullable=False)
-    # nid = Column(Integer, ForeignKey('news.nid'), nullable=False)
-    eid = Column(Integer, nullable=False)
-    nid = Column(Integer, nullable=False)
+    eid = Column(Integer, ForeignKey('entity.eid'), nullable=False)
+    nid = Column(Integer, ForeignKey('news.nid'), nullable=False)
     created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
     updated_at = Column(TIMESTAMP, nullable=False,
                         server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
     valid = Column(Boolean, nullable=False, default=1)
     datetime = Column(Date, nullable=False)
+
+Entity.news_clusters = relationship("NewsCluster", back_populates="entities")
+NewsCluster.events = relationship("Event", back_populates="news_clusters")

@@ -73,7 +73,7 @@ async def get_cluster_list(
         else:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Internal server error")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Internal server error : {str(e)}")
     finally:
         db.close()
 
