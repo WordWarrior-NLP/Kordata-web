@@ -2,10 +2,34 @@
   import { Link } from "svelte-routing";
   import Sidebar from "../components/Sidebar.svelte";
   import fastapi from "../lib/api";   
-  import Graph from "../components/Graph.svelte";
+  import GraphContainer from "../components/GraphContainer.svelte";
+  import { onMount } from 'svelte';
   let sideActive = false;
 
   export let cid;
+  import { tick } from 'svelte';
+
+  function getMainTitleFromEvent() {
+    return new Promise((resolve, reject) => {
+      fastapi('get', '/api/events/' +cid+'/with_title', {}, (json) => {
+        resolve(json);
+      });
+    });
+  }
+  
+  let event_with_title = {
+    main_titles: []
+  }
+  async function get_main_titles() {
+    try {
+      let json = await getMainTitleFromEvent();
+      event_with_title = json
+      console.log(event_with_title.main_titles)
+    } catch (error) {
+      console.error("Error fetching main titles:", error);
+    }
+  }
+  get_main_titles()
   
   let news_list = []
   function getNewsFromEvent() {
@@ -28,28 +52,6 @@
 
   get_news_list()
 
-  function getMainTitleFromEvent() {
-    return new Promise((resolve, reject) => {
-      fastapi('get', '/api/events/' +cid+'/with_title', {}, (json) => {
-        resolve(json);
-        reject(json)
-      });
-    });
-  }
-  
-  let event_with_title = {}
-  async function get_main_titles() {
-      try {
-        let json = await getMainTitleFromEvent();
-        event_with_title = json;
-        console.log("Newest main title : " + event_with_title.main_titles[0].title)
-      } catch (error) {
-        console.error("Error fetching news:", error);
-      }
-    }
-
-  get_main_titles()
-  
 </script>
 <section class="bg-light" id="event">
   <div class="d-flex h-100" id="wrapper" class:toggled={sideActive}>
@@ -71,9 +73,7 @@
             </div>
         </nav>
         <!-- Page content-->
-        <div class="container-fluid">
-            <Graph event_with_title={event_with_title}></Graph>
-        </div>
+        <GraphContainer event_with_title={event_with_title}></GraphContainer>
     </div>
   </div>
 </section>
