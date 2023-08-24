@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from internal.crud import *
 from model import News
 from internal.schema import *
+from typing import List
 
 router = APIRouter(prefix="/api/news", tags=["news"])
 

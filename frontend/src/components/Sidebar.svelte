@@ -1,19 +1,54 @@
 <div class="border-end bg-white d-flex flex-column align-items-stretch flex-shrink-0" id="sidebar-wrapper">
   <div class="sidebar-heading border-bottom"><span class="fs-5 fw-semibold">Articles</span></div>
   <div class="list-group list-group-flush border-bottom scrollarea">
-    {#each news_list as cluster}
-      {#each cluster.news as news}
-        <a href={news.linkUrl} target="_blank" class="list-group-item list-group-item-action py-3 lh-tight" aria-current="true">
-          <div class="col-11 mb-1 small"><strong>{news.title}</strong></div>
-          <div class="d-flex w-100 align-items-center justify-content-between">
-            <small class="mb-1">{news.pid}</small>
-            <small>{cluster.datetime}</small>
-          </div>
-        </a>  
+    {#if isLoading}
+      <strong class="text-center align-center m-5">Loading...</strong>
+      <!-- <div class="spinner-box">
+        <svg class="spinner" width="65px" height="65px" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
+          <circle class="path" fill="none" stroke-width="6" stroke-linecap="round" cx="33" cy="33" r="30"></circle>
+       </svg>
+      </div> -->
+    {:else}
+      {#each newsList as cluster}
+        {#each cluster.news as news}
+          <a href={news.linkUrl} target="_blank" class="list-group-item list-group-item-action py-3 lh-tight" aria-current="true">
+            <div class="col-11 mb-1 small"><strong>{news.title}</strong></div>
+            <div class="d-flex w-100 align-items-center justify-content-between">
+              <small class="mb-1">{news.pid}</small>
+              <small>{cluster.datetime}</small>
+            </div>
+          </a>  
+        {/each}
       {/each}
-    {/each}
+    {/if}  
   </div>
 </div>
 <script>
-  export let news_list;
+  import { onMount } from 'svelte';
+  import fastapi from "../lib/api";   
+
+  export let cid;
+  let isLoading = true;
+  let newsList = []
+  function getNewsFromEvent() {
+    return new Promise((resolve, reject) => {
+      fastapi('get', '/api/events/' +cid+'/news', {}, (json) => {
+        resolve(json);
+        reject(json)
+      });
+    });
+  }
+
+  onMount(async () =>{
+    try {
+        isLoading = true;
+        let json = await getNewsFromEvent();
+        newsList = [...newsList, ...json];
+        isLoading = false;
+      } catch (error) {
+        console.error("Error fetching news:", error);
+        isLoading = false;
+      }
+  });
+
 </script>

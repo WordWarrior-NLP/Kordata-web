@@ -1,16 +1,18 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, HTTPException
 from database import get_db
 from sqlalchemy.orm import Session,joinedload,load_only
 from internal.crud import *
 from model import Event, NewsMainTitle, NewsCluster, News
 from internal.schema import *
+from typing import List
+from sqlalchemy import func
 
 router = APIRouter(prefix="/api/events", tags=["event"])
 
-@router.get("/list", response_model=List[EventOut], status_code=status.HTTP_200_OK)
+@router.get("/list", response_model=List[EventListOut], status_code=status.HTTP_200_OK)
 async def get_event_list(
     skip: int | None = 0,
-    limit: int | None = 10,
+    limit: int | None = 25,
     q : EventQuery = Depends(),
     db: Session = Depends(get_db)
 ):
@@ -19,6 +21,7 @@ async def get_event_list(
         if events_list :
             for event in events_list:
                 event.name = event.name.split(",", 2)
+
         else :
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
     except Exception as e:
@@ -26,6 +29,26 @@ async def get_event_list(
     finally:
         db.close()
     return events_list
+
+@router.get("/{cid}", response_model=EventOut, status_code=status.HTTP_200_OK)
+async def get_event_list(
+    cid : int,
+    db: Session = Depends(get_db)
+):
+    try:
+        event_data = get_item_by_id(model=Event, db=db, index=cid)
+        if event_data:
+            event_data.name = event_data.name.split(",", 2)
+            result_dict = event_data.__dict__
+            duration = event_data.update_datetime - event_data.datetime
+            result_dict['days'] = duration.days
+        else :
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Internal server error : {e}")
+    finally:
+        db.close()
+    return result_dict
 
 
 @router.get("/{cid}/with_title", response_model=EventWithMainTitle, status_code=status.HTTP_200_OK)
@@ -41,11 +64,35 @@ async def event_list(
             .first()
         if result:
             result.name = result.name.split(",", 2)
-            return result
+            result_dict = result.__dict__
+            duration = result.update_datetime - result.datetime
+            result_dict['days'] = duration.days
+
+            return result_dict
         else:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Internal server error:{e}")
+    finally:
+        db.close()
+
+
+@router.get("/{cid}/main_title", response_model=List[MainTitleOut], status_code=status.HTTP_200_OK)
+async def event_list(
+        cid : int,
+        db: Session = Depends(get_db)
+):
+    try:
+        result = db.query(NewsMainTitle) \
+            .filter(NewsMainTitle.cid == cid) \
+            .options(load_only(NewsMainTitle.nc_id, NewsMainTitle.title, NewsMainTitle.datetime, NewsMainTitle.cid)) \
+            .all()
+        if result:
+            return result
+        else:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    # except Exception as e:
+    #     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Internal server error:{e}")
     finally:
         db.close()
 

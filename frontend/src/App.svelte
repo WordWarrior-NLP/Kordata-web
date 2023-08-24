@@ -23,4 +23,3 @@
   <Route path = "/events/:cid" component="{Diagram}" on:routeLoaded={routeLoaded}></Route>
   <Route path = "*" component="{NotFound}"></Route>
 </Router>
-<Footer/>

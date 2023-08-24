@@ -7,10 +7,10 @@ from sqlalchemy.orm import relationship
 class Entity(Base):
     __tablename__ = "entity"
     eid = Column(Integer, nullable=False, autoincrement=True, primary_key=True)
-    name = Column(String(30), nullable=False)
+    word = Column(String(30), nullable=False)
     label = Column(String(30), nullable=False)
-    desc = Column(String(30), nullable=False)
-    main_word = Column(Boolean, nullable=True, default=0)
+    desc = Column(String(20), nullable=False)
+    main_word = Column(String(30), nullable=False)
     created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
     updated_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
     nc_id = Column(Integer, ForeignKey('news_cluster.nc_id'), nullable=False)
@@ -18,8 +18,7 @@ class Entity(Base):
     valid = Column(Boolean, nullable=False, default=1)
     datetime = Column(Date, nullable=False)
 
-    # sentences = relationship("Sentence", back_populates="entity")
-    # news_related = relationship("News", back_populates="news")
+
 
 class Event(Base):
     __tablename__ = "event"
@@ -32,8 +31,7 @@ class Event(Base):
     datetime = Column(Date, nullable=False)
     update_datetime = Column(Date, nullable=True)
 
-    main_titles = relationship("NewsMainTitle", backref="event", order_by='news_main_title.columns.datetime.desc()')
-    news_clusters = relationship("NewsCluster", back_populates="events")
+
 
 class News(Base):
     __tablename__ = "news"
@@ -55,7 +53,8 @@ class News(Base):
     nc_id = Column(Integer, ForeignKey('news_cluster.nc_id'), nullable=True)
     pre_title = Column(Text, nullable=False)
 
-    news_cluster = relationship("NewsCluster", back_populates="news")
+
+
 
 class NewsCluster(Base):
     __tablename__ = "news_cluster"
@@ -68,8 +67,6 @@ class NewsCluster(Base):
     valid = Column(Boolean, nullable=False, default=1)
     nid = Column(Text, nullable=False)
 
-    news = relationship("News", back_populates="news_cluster", order_by='news.columns.datetime.desc()')
-    entities = relationship("Entity", back_populates="news_clusters")
 
 class ClusterKeyword(Base):
     __tablename__ = "cluster_keyword"
@@ -117,8 +114,8 @@ class Sentiment(Base):
     __tablename__ = 'sentiment'
     sid = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
     polarity = Column(DECIMAL, nullable=False)
-    eid = Column(Integer, ForeignKey('entity.eid'), nullable=False)
-    nid = Column(Integer, ForeignKey('news.nid'), nullable=False)
+    eid = Column(Integer, ForeignKey('entity.eid'))  # set not null
+    nid = Column(Integer, ForeignKey('news.nid'))    # set not null
     nc_id = Column(Integer, ForeignKey('news_cluster.nc_id'), nullable=False)
     created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
     updated_at = Column(TIMESTAMP, nullable=False,
@@ -131,13 +128,29 @@ class Sentence(Base):
     __tablename__ = 'sentence'
     sentence_id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
     polarity = Column(DECIMAL, nullable=False)
-    eid = Column(Integer, ForeignKey('entity.eid'), nullable=False)
-    nid = Column(Integer, ForeignKey('news.nid'), nullable=False)
+    eid = Column(Integer, ForeignKey('entity.eid'))  # set not null
+    nid = Column(Integer, ForeignKey('news.nid'))    # set not null
     created_at = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
     updated_at = Column(TIMESTAMP, nullable=False,
                         server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
     valid = Column(Boolean, nullable=False, default=1)
     datetime = Column(Date, nullable=False)
 
-Entity.news_clusters = relationship("NewsCluster", back_populates="entities")
-NewsCluster.events = relationship("Event", back_populates="news_clusters")
+
+
+Entity.sentiments = relationship("Sentiment", back_populates="entity")
+Entity.news= relationship("News", back_populates="entity")
+Entity.news_cluster = relationship("NewsCluster", back_populates="entity")
+
+News.news_cluster = relationship("NewsCluster", back_populates="news")
+News.entity = relationship("Entity", back_populates="news")
+
+NewsCluster.news = relationship("News", back_populates="news_cluster", order_by='news.columns.datetime.desc()')
+NewsCluster.event = relationship("Event", back_populates="news_cluster")
+NewsCluster.entity = relationship("Entity", back_populates="news_cluster")
+
+
+Event.main_titles = relationship("NewsMainTitle", backref="event", order_by='news_main_title.columns.datetime.desc()')
+Event.news_cluster = relationship("NewsCluster", back_populates="event")
+
+Sentiment.entity = relationship("Entity", back_populates="sentiments")

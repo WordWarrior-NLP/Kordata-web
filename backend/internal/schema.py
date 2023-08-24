@@ -1,6 +1,5 @@
 from pydantic import BaseModel
 from typing import List
-from internal.custom_exception import InvalidDateFormatError
 import datetime as dt
 
 class defaultClass(BaseModel):
@@ -38,18 +37,22 @@ class EventQuery :
         self.name = name
         self.updated_datetime = update_datetime
 
-class EventOut(defaultClass):
+class EventListOut(defaultClass):
     cid : int
     name : List[str]
     datetime: dt.date
     update_datetime : dt.date
     nc_id : int
 
+class EventOut(EventListOut):
+    days : int
+
 class MainTitleOut(defaultClass):
     title: str
     nc_id : int
     datetime : dt.date
     nt_id : int
+    cid: int
 
 class EventWithMainTitle(EventOut):
     main_titles : List[MainTitleOut]
@@ -69,3 +72,51 @@ class NewsSidebar (defaultClass):
 
 class EventWithNews(ClusterOut):
     news : List[NewsSidebar]
+
+## graph node 클래스
+class Node:
+    def __init__(self, key, level, attributes, end_date):
+        self.data = {}
+        self.group = 'nodes'
+        self.data['level'] = 3 - level
+        self.set_id(key, level)
+        self.set_attributes(attributes, end_date)
+
+    def set_id(self, key, node_type):
+        if node_type == 2:
+            id =  f"news_{key}"
+        elif node_type == 1:
+            id =  f"entity_{key}"
+        else :
+            id = f"event_{key}"
+        self.data['id'] = id
+
+    def set_attributes(self, attributes, end_date):
+        if "label" in attributes:
+            self.data["label"] = attributes["label"]
+        if "cluster" in attributes:
+            self.data['cluster'] = attributes["cluster"]
+        if "datetime" in attributes:
+            self.data['datetime'] = attributes["datetime"]
+            if end_date:
+                duration = end_date - attributes['datetime']
+                self.data['days'] = duration.days
+                min_op = 0.2
+                op = min(max(round(1 - duration.days / 10, 2), min_op), 1)
+                self.data['opacity'] = op
+
+class Edge:
+    def __init__(self, key, source, target, attributes=None):
+        self.group = 'edges'
+        self.data = {}
+        self.data['id'] = f"edge_{key}"
+        self.data['source'] = source
+        self.data['target'] = target
+        self.set_attributes(attributes)
+
+    def set_attributes(self, attributes=None):
+        if attributes:
+            if "polarity" in attributes:
+                self.data['polarity'] = attributes["polarity"]
+
+

@@ -2,10 +2,10 @@
     import fastapi from "../lib/api"
     import Navbar from "../components/Navbar.svelte";   
     import CardImage from "../components/CardImage.svelte";
-    let event_list = []
+    let eventList = []
     function get_event_list() {
         fastapi('get', '/api/events/list', {}, (json) => {
-            event_list = json
+            eventList = json
         })
     }
     get_event_list()
@@ -19,6 +19,6 @@
             <h2 class="section-heading text-uppercase">TOP 10 사건</h2>
             <h3 class="section-subheading text-muted">Lorem ipsum dolor sit amet consectetur.</h3>
         </div>
-        <CardImage event_list={event_list}/>
+        <CardImage eventList={eventList}/>
     </div>
 </section>

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
-from routers import news,event
+from routers import news, event, graph
 
 #  RUN ::
 #  uvicorn main:app --reload
@@ -25,5 +25,6 @@ def index():
 
 app.include_router(news.router)
 app.include_router(event.router)
+app.include_router(graph.router)
 
 
