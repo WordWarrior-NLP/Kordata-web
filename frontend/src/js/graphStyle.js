@@ -15,10 +15,11 @@ export default [
     'text-halign' : 'center',
     'text-valign' : 'center',
     "text-max-width": "100px",
-    "padding-top": "10px",
-    "padding-left": "10px",
-    "padding-bottom": "10px",
-    "padding-right": "10px"
+    "padding-top": "15px",
+    "padding-left": "15px",
+    "padding-bottom": "15px",
+    "padding-right": "15px",
+    "font-size" : "20px"
 
   }
 },
@@ -36,7 +37,7 @@ export default [
     'width' : 'label',
     'height' : '150px',
     'font-weight' : '900',
-    'font-size' : '40px',
+    'font-size' : '50px',
     'text-outline-width' : "3px",
     "text-outline-color" : '#015839',
     'color': "white",
@@ -47,11 +48,11 @@ export default [
 {  
   selector:'node[level=2]',
   style:{
-    'width' : '100px',
-    'height' : '100px',
+    'width' : '200px',
+    'height' : '200px',
     'z-index' : 20,
     'font-weight' : '600',
-    'font-size' : '25px',
+    'font-size' : '40px',
     'background-color' : '#FF9326',
     'text-outline-width' : "2px",
     "text-outline-color" : "#Ff9326",
@@ -79,13 +80,34 @@ export default [
   }
 },
 {
+  selector:'node[level=1].hover',
+  css:{
+    "font-size" :'40px',
+    'text-outline-width' : "3px",
+  }
+},
+{
+  selector:'node[level=2].hover',
+  css:{
+    "font-size" :'80px',
+    'text-outline-width' : "6px",
+  }
+},
+{
+  selector:'node[level=3].hover',
+  css:{
+    "font-size" :'100px',
+    'text-outline-width' : "9px",
+  }
+},
+{
   selector: 'edge',
   style: {
-    'width': 2,
+    'width': 6,
     'target-endpoint' : 'outside-to-node-or-label',
     'source-endpoint' : 'outside-to-node-or-label',
     'source-arrow-shape': 'vee',
-    'line-opacity' : 0.3,
+    'line-opacity' : 0.5,
   }
 },
 {
@@ -109,7 +131,7 @@ export default [
   selector: 'edge.hover',
   style:{
     'width' : 10,
-    'line-opacity' : 0.5,
+    'line-opacity' : 0.7,
     'z-index' : 10
   }
 },
@@ -117,7 +139,7 @@ export default [
   selector: 'edge:selected',
   style:{
     'width' : 15,
-    'line-opacity' : 0.7,
+    'line-opacity' : 0.8,
     'z-index' : 30,
   }
 },

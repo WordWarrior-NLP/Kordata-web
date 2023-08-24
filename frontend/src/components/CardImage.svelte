@@ -1,11 +1,11 @@
 <script>
     import { Link } from "svelte-routing";
-    export let event_list
+    export let eventList
 </script>
 
 <!-- Events Grid-->
 <div class="row">
-    {#each event_list as item}
+    {#each eventList as item}
         <div class="col-lg-4 col-sm-6 mb-4">
             <div class="portfolio-item">
                 <Link to="/events/{item.cid}" class="portfolio-link">

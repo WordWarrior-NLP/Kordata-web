@@ -8,6 +8,7 @@
 	import graphStyle from '../js/graphStyle';
 
   export let cid;
+  let isLoadingGraphData =true;
 
   function getEvent(){
     return new Promise((resolve, reject)=>{
@@ -18,19 +19,15 @@
   }
 
   let startdate = ''
-  let event_object = {}
-  async function get_event(){
+async function get_event(){
     try{
       let json = await getEvent();
       startdate = json.datetime
       $duration = json.days
-      return json
     } catch (error){
       console.error("Error fetching the event:", error);
     }
   }
-
-  event_object = get_event() 
   
   function getMainTitleFromEvent() {
     return new Promise((resolve, reject) => {
@@ -45,13 +42,13 @@
     try {
       let json = await getMainTitleFromEvent();
       $newestMainTitle = json[0].title
-      // console.log("제목" + $newestMainTitle)
+      for (let obj of json){
+        mainTitle.push(obj.title)
+      }
     } catch (error) {
       console.error("Error fetching main titles:", error);
     }
   }
-
-  get_main_titles()
 
   let data = [];
   function getGraphData() {
@@ -70,63 +67,74 @@
     }
   }
 
-  let graphCy = null
+  let graphCy = null;
 
   onMount(async () => {
-    await getGraphDataAndUpdate(); 
-    graphCy = cytoscape({
-      container: document.getElementById("cy-container"),
-      elements: data,
-      style : graphStyle,
-      layout: {
-        nodeSep: 100,
-        animate: false,
-        avoidOverlap: true,
-        name: 'cose',
-        idealEdgeLength: 100, // This controls the ideal length of edges
-        nodeRepulsion: function(node) {
-          return 10000000; // Increase this value to increase the distance between nodes
-        }
-      },
-      zoomingEnabled: true,
-      userZoomingEnabled: true,
-      autoungrabify: false,
-      pan : {x: 400, y: 500},
-      wheelSensitivity : 0.3,
-    });
+    try {
+      await Promise.all([
+        get_event(),
+        get_main_titles()
+      ]);
+    
+      isLoadingGraphData = false;
+      await getGraphDataAndUpdate(); 
 
-    graphCy.on("mouseover", "edge", function (e) {
-      e.target.addClass("hover");
-    });
-    graphCy.on("mouseout", "edge", function (e) {
-      e.target.removeClass("hover");
-    });
-    //NODE EVENTS
-    graphCy.on("mouseover", "node", function (e) {
-      e.target.addClass("hover");
-    });
-    graphCy.on("mouseout", "node", function (e) {
-      e.target.removeClass("hover");
-    });
-    graphCy.on("mousedown", "node", function (e) {
-      e.target.addClass("hover");
-    });
-    graphCy.on("click", "node", function (e) {
-      graphCy.zoom({level:0.8, position: this.position()})
-      graphCy.pan(this.position)
-    });
-    graphCy.on("click", "edge", function (e) {
-      graphCy.zoom({level:0.8, position: this.position()})
-    });
-});
+      graphCy = cytoscape({
+        container: document.getElementById("cy-container"),
+        elements: data,
+        style : graphStyle,
+        layout: {
+          nodeSep: 100,
+          animate: false,
+          avoidOverlap: true,
+          name: 'cose',
+          idealEdgeLength: 300, // This controls the ideal length of edges
+          nodeRepulsion: function(node) {
+            return 100000000; // Increase this value to increase the distance between nodes
+          }
+        },
+        zoomingEnabled: true,
+        userZoomingEnabled: true,
+        autoungrabify: false,
+        zoom:1,
+        pan : {x: 400, y: 100},
+        wheelSensitivity : 0.3,
+      });
+
+      graphCy.on("mouseover", "edge", function (e) {
+        e.target.addClass("hover");
+      });
+      graphCy.on("mouseout", "edge", function (e) {
+        e.target.removeClass("hover");
+      });
+      //NODE EVENTS
+      graphCy.on("mouseover", "node", function (e) {
+        e.target.addClass("hover");
+      });
+      graphCy.on("mouseout", "node", function (e) {
+        e.target.removeClass("hover");
+      });
+      graphCy.on("mousedown", "node", function (e) {
+        e.target.addClass("hover");
+      });
+      graphCy.on("click", "node", function (e) {
+        graphCy.zoom({level:0.8, position: this.position()})
+        graphCy.pan(this.position)
+      });
+      graphCy.on("click", "edge", function (e) {
+        graphCy.zoom({level:0.8, position: this.position()})
+      });
+    
+    } catch (error) {
+      console.error("Error setting visibility:", error);
+    }
+  });
 
 let value = 0
 
 async function setVisible(){
   try {
-      mainTitle = await getMainTitleFromEvent();
-      $newestMainTitle = mainTitle[value].title
-      // console.log($newestMainTitle)
+      $newestMainTitle = mainTitle[value]
     } catch (error) {
       console.error("Error fetching main titles:", error);
     }
@@ -134,11 +142,10 @@ async function setVisible(){
       if(node.data("days") < value){
         if(!(node.hasClass("hide"))){
           node.addClass("hide");
-          // console.log("hide" + node.data("days"))
         }
       }
       else{
-        let opacityValue = Math.max(0.2, Math.min(1, 1- (value- node.data('days')) / $duration));
+        let opacityValue = Math.max(0.3, Math.min(1, 1- (value- node.data('days')) / $duration));
         if(node.hasClass("hide")){
           node.removeClass("hide")
           node.data('opacity', opacityValue);
@@ -166,11 +173,19 @@ async function setVisible(){
 
 <div class="container-fluid" >
   <div id="slider-box" class="w-75">
-    <p align="center" class="mb-0">{startdate} ~ {addDays(startdate, value)}</p>
+    <p align="center" id="sliderValue">{startdate} ~ {addDays(startdate, value)}</p>
     <input type="range" class="form-range" bind:value min=0 max={$duration} on:change={setVisible}/>
-    <p id="maintitle" align="center">Main Title : {$newestMainTitle}</p>
+    <p id="mainTitle" align="center">Main Title : {$newestMainTitle}</p>
   </div>
-  <div id="cy-container"></div>
+  {#if isLoadingGraphData}
+      <div class="spinner-box">
+        <svg class="spinner" width="65px" height="65px" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
+          <circle class="path" fill="none" stroke-width="6" stroke-linecap="round" cx="33" cy="33" r="30"></circle>
+       </svg>
+      </div>
+  {:else}
+    <div id="cy-container"></div>
+  {/if}
 </div>
 
 
@@ -205,11 +220,11 @@ async function setVisible(){
 }
 
 @keyframes colors {
-  0% { stroke: #4285F4; }
-  25% { stroke: #DE3E35; }
-  50% { stroke: #F7C223; }
-  75% { stroke: #1B9A59; }
-  100% { stroke: #4285F4; }
+  0% { stroke: #fa6b05; }
+  25% { stroke: #ff8f26f1; }
+  50% { stroke: #f7ad23; }
+  75% { stroke: #f8c572; }
+  100% { stroke: #f6e1af; }
 }
 
 @keyframes dash {
@@ -239,5 +254,16 @@ flex-direction: column;
   margin-bottom: 10px;
   margin-left: auto;
   margin-right: auto;
+}
+#sliderValue{
+  margin-top: 1rem;
+  margin-bottom: 0;
+  text-align: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: 600;
+}
+#mainTitle{
+  font-size: large;
+  font-weight: 600;
 }
 </style>

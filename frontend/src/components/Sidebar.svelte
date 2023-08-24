@@ -3,11 +3,6 @@
   <div class="list-group list-group-flush border-bottom scrollarea">
     {#if isLoading}
       <strong class="text-center align-center m-5">Loading...</strong>
-      <!-- <div class="spinner-box">
-        <svg class="spinner" width="65px" height="65px" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
-          <circle class="path" fill="none" stroke-width="6" stroke-linecap="round" cx="33" cy="33" r="30"></circle>
-       </svg>
-      </div> -->
     {:else}
       {#each newsList as cluster}
         {#each cluster.news as news}
