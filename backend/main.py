@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
-from routers import news, event, graph
+# from routers import news
 
 #  RUN ::
 #  uvicorn main:app --reload
@@ -23,8 +23,6 @@ def index():
     return {"message": "Let's start!"}
 
 
-app.include_router(news.router)
-app.include_router(event.router)
-app.include_router(graph.router)
+# app.include_router(news.router)
 
 
