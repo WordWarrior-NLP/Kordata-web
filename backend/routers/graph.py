@@ -65,7 +65,7 @@ async def get_graph_data(
                 existed_nw.append(news[1])
                 news_cnt += 1
                 news_attributes = {
-                    'label': news[0][:10].replace('"', '') + "...",
+                    'label': news[0].replace('"', '') + "...",
                     'cluster' : news[2],
                     'datetime': news[3].date(),
                 }
