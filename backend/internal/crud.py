@@ -1,39 +1,12 @@
-from custom_exception import *
 from fastapi import status, HTTPException
-from sqlalchemy import and_
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.inspection import inspect
+from internal.custom_exception import ItemKeyValidationError
 from datetime import datetime, time
 from typing import Dict, Any
 import ast
-
-
-def filter_by_period(*,
-                     query,
-                     model,
-                     p,
-                     use_updated_at: bool | None = False):
-    '''
-    조회 기간을 기준으로 한 filtering
-    :param query: database session의 query
-    :param model: filtering이 이뤄질 database의 table
-    :param p: object, get_begin(조회 시작 날짜), get_end(조회 종료 날짜)가 포함됨
-    :param use_updated_at: 기간 조회에 사용될 model의 column 설정
-                           True - update_at(수정일), False : create_at(등록일)
-                           default : False
-    :return: query
-    '''
-    date_column = model.updated_at if use_updated_at else model.created_at
-    for attr, value in p.__dict__.items():
-        if value:
-            if attr == 'get_begin':
-                parsed_date = datetime.combine(value, time.min)
-                query = query.filter(date_column >= parsed_date)
-            elif attr == 'get_end':
-                parsed_date = datetime.combine(value, time.max)
-                query = query.filter(date_column <= parsed_date)
-    return query
+from internal.schema import Node, Edge
+from collections import defaultdict
+import datetime as dt
 
 
 # FILTERING LOGIC CODE 간소화 함수
@@ -43,37 +16,91 @@ def filters_by_query(query, model, q):
             if isinstance(value, str):
                 query = query.filter(getattr(model, attr).ilike(f"%{value}%"))
             elif isinstance(value, (int, bool)):
-                if attr != 'rating':
-                    query = query.filter(getattr(model, attr) == value)
-                else:
-                    filter_expression = and_(value + 1 > getattr(model, attr), getattr(model, attr) >= value)
-                    query = query.filter(filter_expression)
+                query = query.filter(getattr(model, attr) == value)
     return query
 
-
-# order_by 간소화 함수
-def orders_by_query(query, model, o):
-    for attr, value in o.__dict__.items():
-        try:
-            if value is None:
-                continue
-            if value is False:
-                query = query.order_by(getattr(model, attr).asc())
-            if value is True:
-                query = query.order_by(getattr(model, attr).desc())
-        except AttributeError:
-            continue
-    return query
 
 ## 뉴스ID 목록의 STRING을 ID 리스트로 변환
-def extract_nid(str_list : list):
-    nid_list = []
-
-    for item in str_list:
-        nested_list = ast.literal_eval(item[0])
-        nid_list.extend(nested_list)
-
+def extract_nid(nid_string : str):
+    nid_list = ast.literal_eval(nid_string)
+    nid_list = [int(nid) for nid in nid_list]
     return nid_list
+
+# pid(int) -> press_name(str)
+def convert_pid(pid : int):
+    press_name = {
+        32: '경향신문',
+        5: '국민일보',
+        20 : '동아일보',
+        21 : '문화일보',
+        81 : '서울신문',
+        22 : '세계일보',
+        23 : '조선일보',
+        25 : '중앙일보',
+        28 :'한겨레',
+        469 : '한국일보'
+    }
+
+    return press_name[pid]
+
+def group_articles(input_data):
+#     grouped_articles = defaultdict(list)
+#     for article in news_articles:
+#         key = (article["main_word"], article["nc_id"])
+#         grouped_articles[key].append(article["news"])
+#
+#
+#     # 그룹화된 결과를 원하는 형태로 변환
+#     output = []
+#     for (main_word, nc_id), articles in grouped_articles.items():
+#         eid = next(a["eid"] for a in news_articles if a["main_word"] == main_word and a["nc_id"] == nc_id)
+#         datetime = next(a["datetime"] for a in news_articles if a["main_word"] == main_word and a["nc_id"] == nc_id)
+#         output.append({
+#             "eid": eid,  # 여기서 nid를 어떻게 설정할지에 따라 달라질 수 있습니다.
+#             "nc_id": nc_id,
+#             "main_word": main_word,
+#             "datetime": datetime,
+#             "articles": articles
+#         })
+#     return output
+
+    grouped_output = defaultdict(list)
+
+    for item in input_data:
+        nc_id = item["nc_id"]
+        eid = item["eid"]
+        main_word = item["main_word"]
+        datetime = item["datetime"]
+        if len(item["sentiments"]) == 1:
+            sentiment = item["sentiments"][0]  # Assuming there's only one sentiment in your example
+            sentiment_dict = {
+                "title": item["news"].title,
+                "nid": item["news"].nid,
+                "datetime" : item["news"].datetime.date(),
+                "polarity": sentiment.polarity,
+                "sid": sentiment.sid
+            }
+        else :
+            sentiment_dict = {
+                "title": item["news"].title,
+                "nid": item["news"].nid,
+                "polarity" : None,
+                "datetime": item["news"].datetime.date(),
+            }
+        grouped_output[main_word].append(sentiment_dict)
+
+    final_output = []
+    for main_word, article_list in grouped_output.items():
+        entry = {
+            "eid" : eid,
+            "main_word": main_word,
+            "datetime": datetime,
+            "nc_id": nc_id,
+            "article": article_list
+        }
+        final_output.append(entry)
+    return final_output
+
 
 # 명시적 외래키 값 존재 확인
 # 성능 최적화 또는 자세한 오류 처리와 같이 데이터를 삽입하기 전에 외래 키 값의 존재를 확인해야 하는 특정 요구 사항이 있는 경우
@@ -86,34 +113,15 @@ def get_referenced_table_and_fk(model):
     return referenced_tables
 
 
-def valid_referenced_key(model, item, db):
-    referenced_tables = get_referenced_table_and_fk(model)
-    for attr, value in referenced_tables.items():
-        if hasattr(item, attr):
-            try:
-                refer = get_item_by_column(model=model, columns={attr: getattr(item, attr)}, mode=True, db=db)
-            except NoResultFound:
-                raise ForeignKeyValidationError((attr, item[attr]))
-            else:
-                if not refer:
-                    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-    return True
-
-
 # get the item by primary key
-def get_item_by_id(*,
+def get_item_by_id(
                    model,
                    index: int,
-                   db,
-                   user_mode: bool | None = True):
-    pk = inspect(model).primary_key[0].name
+                   db):
     try:
-        if user_mode:
-            item = db.query(model).filter_by(**{pk: index, 'valid': user_mode}).one()
-        else:
-            item = db.query(model).filter_by(**{pk: index}).one()
-    except NoResultFound:
-        raise ItemKeyValidationError(detail=(f"{pk}", index))
+        item = db.query(model).get(index)
+        if not item:
+            raise ItemKeyValidationError(detail=("", index))
     finally:
         db.close()
     return item
@@ -132,97 +140,32 @@ def get_item_by_column(*,
                 query = query.filter(model.valid)
     if mode:
         result = query.all()
-        return result
-    return query
-
-
-
-# CREATE
-def create_item(model, req, db):
-    item = model(**req.dict())
-    try:
-        if valid_referenced_key(model, item, db):
-            db.add(item)
-            db.commit()
-            db.refresh(item)
-    except IntegrityError as e:
-        db.rollback()
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail=f"Fail to create the new {model} item. {str(e.orig)}")
-    finally:
-        db.close()
-    return item
+    else: result = query
+    return result
 
 # GET
 def get_list_of_item(*,
                      model,
-                     skip: int,
-                     limit: int,
-                     # use_update_at: bool | None = False,
-                     user_mode: bool | None = True,
+                     skip: int | None = 0,
+                     limit: int | None = 10,
                      q,
-                     # p,
-                     o,
                      init_query: Any | None = None,
                      db,
                      ):
     if init_query is None:
         init_query = db.query(model)
     query = filters_by_query(init_query, model, q)
-    # query = filter_by_period(query=query, model=model, p=p, use_updated_at=use_update_at)
-    if user_mode:
-        query = query.filter(model.valid)
-    query = orders_by_query(query, model, o)
+    if hasattr(model, 'update_datetime'):
+        query = query.order_by(model.update_datetime.desc())
+    elif hasattr(model, 'datetime'):
+        query = query.order_by(model.datetime.desc())
     result = query.offset(skip).limit(limit).all()
     if not result:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-
     db.close()
-
     return result
 
 
-# update
-def update_item(*,
-                model,
-                req,
-                index,
-                db):
-    item = get_item_by_id(model=model, index=index, db=db, user_mode=True)
-    dict_item = item.__dict__
-    dict_req = req.__dict__
-    try:
-        for key in dict_req.keys():
-            if key in dict_item:
-                if isinstance(dict_req[key], type(dict_item[key])):
-                    if valid_referenced_key(model, dict_req, db):
-                        setattr(item, key, dict_req[key])
-                else:
-                    raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                                        detail=f"Invalid value type for column '{key}'.")
-        db.add(item)
-        db.commit()
-        db.refresh(item)
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            detail=f"Unexpected error occurred during update: {str(e)}")
-    finally:
-        db.close()
-    return item
 
 
-# delete
-def delete_item(model, index, db):
-    item = get_item_by_id(model=model, index=index, db=db)
-    try:
-        setattr(item, 'valid', False)
-        db.add(item)
-        db.commit()
-        db.refresh(item)
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            detail=f"Unexpected error occurred during delete: {str(e)}")
-    finally:
-        db.close()
+
