@@ -124,7 +124,7 @@ export default [
 },
 { selector: 'edge[polarity = 0]',
   style: {
-    'line-color' : '#ebff86'
+    'line-color' : '#BA55D3'
   }
 },
 {

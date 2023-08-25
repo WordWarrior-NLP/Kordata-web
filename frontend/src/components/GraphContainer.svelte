@@ -86,12 +86,12 @@ async function get_event(){
         style : graphStyle,
         layout: {
           nodeSep: 100,
-          animate: false,
+          animate: true,
           avoidOverlap: true,
           name: 'cose',
-          idealEdgeLength: 300, // This controls the ideal length of edges
+          idealEdgeLength: 500, // This controls the ideal length of edges
           nodeRepulsion: function(node) {
-            return 100000000; // Increase this value to increase the distance between nodes
+            return 1000000000; // Increase this value to increase the distance between nodes
           }
         },
         zoomingEnabled: true,
@@ -122,10 +122,6 @@ async function get_event(){
         graphCy.zoom({level:0.8, position: this.position()})
         graphCy.pan(this.position)
       });
-      graphCy.on("click", "edge", function (e) {
-        graphCy.zoom({level:0.8, position: this.position()})
-      });
-    
     } catch (error) {
       console.error("Error setting visibility:", error);
     }
