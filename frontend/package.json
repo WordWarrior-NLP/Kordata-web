@@ -24,9 +24,6 @@
     "cytoscape-cose-bilkent": "^4.1.0",
     "cytoscape-fcose": "^2.2.0",
     "cytoscape-no-overlap": "^1.0.1",
-    "graphology": "^0.25.4",
-    "graphology-layout-forceatlas2": "^0.10.1",
-    "sigma": "^3.0.0-alpha3",
     "startbootstrap-agency": "^7.0.12"
   }
 }

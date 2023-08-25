@@ -131,25 +131,37 @@ async function get_event(){
   });
 
 let value = 0
+let opacityValue = 0
 
 async function setVisible(){
+
   try {
       $newestMainTitle = mainTitle[value]
+
     } catch (error) {
       console.error("Error fetching main titles:", error);
     }
     graphCy.nodes('node[days]').each(function(node){
+      console.log("v" + value)
+      console.log("d" + $duration)
+      console.log("days" + node.data('days'))
+      // console.log("변환 전"+node.data('opacity'))
       if(node.data("days") < value){
         if(!(node.hasClass("hide"))){
           node.addClass("hide");
         }
       }
       else{
-        let opacityValue = Math.max(0.3, Math.min(1, 1- (value- node.data('days')) / $duration));
         if(node.hasClass("hide")){
           node.removeClass("hide")
-          node.data('opacity', opacityValue);
         }
+
+        // opacityValue = 1 - (node.data('days')-value)/10
+        opacityValue = 1 - (node.data('days')-value)/$duration
+        opacityValue = Math.max(0, opacityValue)
+        opacityValue = Math.min(1, opacityValue)
+        node.data('opacity', opacityValue);
+        // console.log("변환 후"+node.data('opacity'))
       }
     });
   };
@@ -261,6 +273,7 @@ flex-direction: column;
   text-align: center;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   font-weight: 600;
+  font-size : 1.5rem
 }
 #mainTitle{
   font-size: large;
