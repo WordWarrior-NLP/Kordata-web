@@ -5,8 +5,7 @@ from internal.crud import *
 from model import Event, NewsCluster, News, Entity, Sentiment
 from internal.schema import *
 
-# TODO : GRAPH DATA
-#    event - [clsuter] -news(entity 없음) - entity - news(있음) - sentiment
+
 router = APIRouter(prefix="/api/graph", tags=["graph"])
 
 
@@ -41,15 +40,19 @@ async def get_graph_data(
         output.append(event_node)
 
     if news_data:
+
         for news in news_data:
+            nc_id = news[2]
             main_word = news[4]
+            entity_datetime = news[5]
+
             if main_word not in existed_et:
                 existed_et.append(main_word)
                 entity_cnt += 1
                 entity_attributes = {
                     'label': main_word,
-                    'cluster': news[2],
-                    'datetime': news[5],
+                    'cluster': nc_id,
+                    'datetime': entity_datetime
                 }
 
                 entity_node = Node(entity_cnt, 1, entity_attributes, end_date)
@@ -64,8 +67,9 @@ async def get_graph_data(
             if news[1] not in existed_nw:
                 existed_nw.append(news[1])
                 news_cnt += 1
+                main_word = news[0].replace('"', '') + "...",
                 news_attributes = {
-                    'label': news[0].replace('"', '') + "...",
+                    'label': main_word,
                     'cluster' : news[2],
                     'datetime': news[3].date(),
                 }
