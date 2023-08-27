@@ -98,12 +98,16 @@ class Node:
             self.data['cluster'] = attributes["cluster"]
         if "datetime" in attributes:
             self.data['datetime'] = attributes["datetime"]
-            if end_date:
-                duration = end_date - attributes['datetime']
-                self.data['days'] = duration.days
-                min_op = 0.3
-                op = min(max(round(1 - duration.days / 10, 2), min_op), 1)
-                self.data['opacity'] = op
+            duration = end_date - attributes['datetime']
+            self.data['days'] = duration.days
+            if "max_news_date" in attributes:
+                self.data['max_date'] = attributes["max_news_date"]
+                duration = end_date - attributes['max_news_date']
+                op = min(max(round(1 - duration.days / 10, 2), 0), 1)
+                self.data['days_max'] = duration.days
+            else :
+                op = min(max(round(1 - duration.days / 10, 2), 0), 1)
+            self.data['opacity'] = op
 
 class Edge:
     def __init__(self, key, source, target, attributes=None):

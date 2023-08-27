@@ -21,8 +21,9 @@
 <script>
   import { onMount } from 'svelte';
   import fastapi from "../lib/api";   
-
+  import { selectedNews } from '../store';
   export let cid;
+
   let isLoading = true;
   let newsList = []
   function getNewsFromEvent() {

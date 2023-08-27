@@ -91,8 +91,8 @@ async def event_list(
             return result
         else:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    # except Exception as e:
-    #     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Internal server error:{e}")
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Internal server error:{e}")
     finally:
         db.close()
 

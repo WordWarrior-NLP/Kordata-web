@@ -4,7 +4,7 @@
   import { onMount  } from 'svelte';
   import fastapi from "../lib/api";
   import cytoscape from 'cytoscape';
-  import {newestMainTitle, duration} from '../store'; 
+  import {newestMainTitle, duration, selectedNews} from '../store'; 
 	import graphStyle from '../js/graphStyle';
 
   export let cid;
@@ -122,6 +122,9 @@ async function get_event(){
         graphCy.zoom({level:0.8, position: this.position()})
         graphCy.pan(this.position)
       });
+      graphCy.on("click", "node[level=1]", function(e){
+          e.target.data("id")
+      })
     } catch (error) {
       console.error("Error setting visibility:", error);
     }
@@ -152,12 +155,16 @@ async function setVisible(){
         if(node.hasClass("hide")){
           node.removeClass("hide")
         }
-
-        opacityValue = 1 - (node.data('days')-value)/$duration
-        opacityValue = Math.max(0, opacityValue)
-        opacityValue = Math.min(1, opacityValue)
-        node.data('opacity', opacityValue);
       }
+      if(node.data('level')==2){
+        opacityValue = 1 - (node.data('days_max')-value)/$duration
+      }
+      else {
+        opacityValue = 1 - (node.data('days')-value)/$duration
+      }
+      opacityValue = Math.max(0, opacityValue)
+      opacityValue = Math.min(1, opacityValue)
+      node.data('opacity', opacityValue);
     });
   };
 
