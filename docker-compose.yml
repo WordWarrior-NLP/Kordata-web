@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  frontend:
+    env_file:
+      - ./frontend/.env
+    build:
+      context: ./frontend
+    ports:
+      - "80:80"
+    # environment:
+    #   VITE_SERVER_URL: ${VITE_SERVER_URL}
+    depends_on:
+      - backend
+  backend:
+    env_file:
+      - ./backend/.env
+    build:
+      context: ./backend
+    ports:
+      - "8000:8000"
+    # environment:
+    #   DB_DB: ${DB_DB}
+    #   DB_HOST: ${DB_HOST}
+    #   DB_PORT: ${DB_PORT}
+    #   DB_USER: ${DB_USER}
+    #   DB_PASSWORD: ${DB_PASSWORD}
+    #   DOCKERHUB_TOKEN: ${DOCKERHUB_TOKEN}
+    #   DOCKERHUB_USERNAME: ${DOCKERHUB_USERNAME}
