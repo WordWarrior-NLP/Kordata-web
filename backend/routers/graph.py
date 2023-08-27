@@ -5,10 +5,7 @@ from internal.crud import *
 from model import Event, NewsCluster, News, Entity, Sentiment
 from internal.schema import *
 
-# TODO : GRAPH DATA
-#    event - [clsuter] -news(entity 없음) - entity - news(있음) - sentiment
 router = APIRouter(prefix="/api/graph", tags=["graph"])
-
 
 @router.get("/{cid}/data", status_code=status.HTTP_200_OK)
 async def get_graph_data(
