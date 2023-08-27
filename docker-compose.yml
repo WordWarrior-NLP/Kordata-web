@@ -1,28 +1,23 @@
 version: '3.8'
 services:
-  frontend:
-    env_file:
-      - ./frontend/.env
+  fastapi-app:
     build:
-      context: ./frontend
+      context: ./backend  # 경로는 fastapi Dockerfile이 있는 곳의 경로로 수정하세요.
+    environment:
+      - DB_DB=${{ secrets.DB_DB }}
+      - DB_HOST=${{ secrets.DB_HOST }}
+      - DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+      - DB_PORT=${{ secrets.DB_PORT }}
+      - DB_USER=${{ secrets.DB_USER }}
     ports:
-      - "80:80"
-    # environment:
-    #   VITE_SERVER_URL: ${VITE_SERVER_URL}
-    depends_on:
-      - backend
-  backend:
-    env_file:
-      - ./backend/.env
+      - "8080:8000"
+    container_name: fastapi-container
+    restart: unless-stopped
+
+  svelte-app:
     build:
-      context: ./backend
+      context: ./frontend  # 경로는 svelte Dockerfile이 있는 곳의 경로로 수정하세요.
     ports:
-      - "8000:8000"
-    # environment:
-    #   DB_DB: ${DB_DB}
-    #   DB_HOST: ${DB_HOST}
-    #   DB_PORT: ${DB_PORT}
-    #   DB_USER: ${DB_USER}
-    #   DB_PASSWORD: ${DB_PASSWORD}
-    #   DOCKERHUB_TOKEN: ${DOCKERHUB_TOKEN}
-    #   DOCKERHUB_USERNAME: ${DOCKERHUB_USERNAME}
+      - "5173:5173"
+    container_name: svelte-container
+    restart: unless-stopped
