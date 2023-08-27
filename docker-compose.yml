@@ -1,0 +1,23 @@
+version: '3.8'
+services:
+  fastapi-app:
+    build:
+      context: ./backend  # 경로는 fastapi Dockerfile이 있는 곳의 경로로 수정하세요.
+    environment:
+      - DB_DB=${{ secrets.DB_DB }}
+      - DB_HOST=${{ secrets.DB_HOST }}
+      - DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+      - DB_PORT=${{ secrets.DB_PORT }}
+      - DB_USER=${{ secrets.DB_USER }}
+    ports:
+      - "8080:8000"
+    container_name: fastapi-container
+    restart: unless-stopped
+
+  svelte-app:
+    build:
+      context: ./frontend  # 경로는 svelte Dockerfile이 있는 곳의 경로로 수정하세요.
+    ports:
+      - "5173:5173"
+    container_name: svelte-container
+    restart: unless-stopped

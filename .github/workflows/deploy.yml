@@ -47,12 +47,13 @@ jobs:
         DB_USER: ${{ secrets.DB_USER }}
         DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        VITE_SERVER_URL : ${{secrets.VITE_SERVER_URL}}
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
         password: ${{ secrets.PASSWORD }}
         port: ${{ secrets.PORT }}
-        envs: DB_DB, DB_HOST, DB_PASSWORD, DB_PORT, DB_USER, DOCKERHUB_USERNAME, DOCKERHUB_TOKEN
+        envs: DB_DB, DB_HOST, DB_PASSWORD, DB_PORT, DB_USER, DOCKERHUB_USERNAME, DOCKERHUB_TOKEN, VITE_sERVER_URL
         script: |
           docker stop $(docker ps -q)
           docker rmi -f $(docker images -aq)
@@ -63,7 +64,7 @@ jobs:
           docker run --rm \
           -e DB_DB=${{secrets.DB_DB}} -e DB_HOST=${{secrets.DB_HOST}} \
           -e DB_PASSWORD=${{secrets.DB_PASSWORD}} -e DB_PORT=${{secrets.DB_PORT}} \
-          -e DB_USER=${{secrets.DB_USER}} \
+          -e DB_USER=${{secrets.DB_USER}} -e VITE_SERVER_URL=${{secrets.VITE_SERVER_URL}}\
           -p 8080:8000 \
-          -d --name container_name ${{ secrets.DOCKERHUB_USERNAME }}/app:latest
+          --name container_name ${{ secrets.DOCKERHUB_USERNAME }}/app:latest
           echo "docker ps"
