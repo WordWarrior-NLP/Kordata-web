@@ -4,11 +4,12 @@
   import { onMount  } from 'svelte';
   import fastapi from "../lib/api";
   import cytoscape from 'cytoscape';
-  import {newestMainTitle, duration} from '../store'; 
+  import {newestMainTitle, duration, selectedNews} from '../store'; 
 	import graphStyle from '../js/graphStyle';
 
   export let cid;
-  let isLoadingGraphData =true;
+  let isLoadingGraphData = true;
+  let isLoadingMainTitle = true;
 
   function getEvent(){
     return new Promise((resolve, reject)=>{
@@ -75,7 +76,7 @@ async function get_event(){
         get_event(),
         get_main_titles()
       ]);
-    
+      isLoadingMainTitle = false;
       isLoadingGraphData = false;
       await getGraphDataAndUpdate(); 
 
@@ -85,12 +86,12 @@ async function get_event(){
         style : graphStyle,
         layout: {
           nodeSep: 100,
-          animate: false,
+          animate: true,
           avoidOverlap: true,
           name: 'cose',
-          idealEdgeLength: 300, // This controls the ideal length of edges
+          idealEdgeLength: 500, // This controls the ideal length of edges
           nodeRepulsion: function(node) {
-            return 100000000; // Increase this value to increase the distance between nodes
+            return 1000000000; // Increase this value to increase the distance between nodes
           }
         },
         zoomingEnabled: true,
@@ -121,10 +122,9 @@ async function get_event(){
         graphCy.zoom({level:0.8, position: this.position()})
         graphCy.pan(this.position)
       });
-      graphCy.on("click", "edge", function (e) {
-        graphCy.zoom({level:0.8, position: this.position()})
-      });
-    
+      graphCy.on("click", "node[level=1]", function(e){
+          e.target.data("id")
+      })
     } catch (error) {
       console.error("Error setting visibility:", error);
     }
@@ -145,7 +145,7 @@ async function setVisible(){
       console.log("v" + value)
       console.log("d" + $duration)
       console.log("days" + node.data('days'))
-      // console.log("변환 전"+node.data('opacity'))
+
       if(node.data("days") < value){
         if(!(node.hasClass("hide"))){
           node.addClass("hide");
@@ -155,14 +155,16 @@ async function setVisible(){
         if(node.hasClass("hide")){
           node.removeClass("hide")
         }
-
-        // opacityValue = 1 - (node.data('days')-value)/10
-        opacityValue = 1 - (node.data('days')-value)/$duration
-        opacityValue = Math.max(0, opacityValue)
-        opacityValue = Math.min(1, opacityValue)
-        node.data('opacity', opacityValue);
-        // console.log("변환 후"+node.data('opacity'))
       }
+      if(node.data('level')==2){
+        opacityValue = 1 - (node.data('days_max')-value)/$duration
+      }
+      else {
+        opacityValue = 1 - (node.data('days')-value)/$duration
+      }
+      opacityValue = Math.max(0, opacityValue)
+      opacityValue = Math.min(1, opacityValue)
+      node.data('opacity', opacityValue);
     });
   };
 
@@ -184,10 +186,14 @@ async function setVisible(){
 </script>
 
 <div class="container-fluid" >
-  <div id="slider-box" class="w-75">
-    <p align="center" id="sliderValue">{startdate} ~ {addDays(startdate, value)}</p>
-    <input type="range" class="form-range" bind:value min=0 max={$duration} on:change={setVisible}/>
-    <p id="mainTitle" align="center">Main Title : {$newestMainTitle}</p>
+  <div id="slider-box" class="w-75 m-auto">
+   {#if isLoadingMainTitle}
+      <strong class="text-center align-center m-5 mt-4">Loading...</strong>
+    {:else}
+      <p align="center" id="sliderValue">{startdate} ~ {addDays(startdate, value)}</p>
+      <input type="range" class="form-range" bind:value min=0 max={$duration} on:change={setVisible}/>
+      <p id="mainTitle" align="center">Main Title : {$newestMainTitle}</p>
+    {/if}
   </div>
   {#if isLoadingGraphData}
       <div class="spinner-box">
@@ -266,14 +272,16 @@ flex-direction: column;
   margin-bottom: 10px;
   margin-left: auto;
   margin-right: auto;
+  text-align: center;
 }
 #sliderValue{
-  margin-top: 1rem;
+  margin-top: 0.5rem;
   margin-bottom: 0;
   text-align: center;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   font-weight: 600;
-  font-size : 1.5rem
+  font-size : 1rem;
+  text-align: center;
 }
 #mainTitle{
   font-size: large;

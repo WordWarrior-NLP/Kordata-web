@@ -7,4 +7,5 @@ export let previousLocation = writable('')
 export let newestMainTitle = writable('')
 export let duration = writable(0);
 export let sideActive = writable(true);
+export let selectedNews = writable(0);
 
