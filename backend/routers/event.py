@@ -5,7 +5,6 @@ from internal.crud import *
 from model import Event, NewsMainTitle, NewsCluster, News
 from internal.schema import *
 from typing import List
-from sqlalchemy import func
 
 router = APIRouter(prefix="/api/events", tags=["event"])
 
@@ -97,8 +96,6 @@ async def event_list(
         db.close()
 
 # Event ID로 뉴스 조회
-# TODO q 없으면 전체 클러스터 기사 조회
-#   q에 nc_id, datetime로 뉴스 클러스터 노드 클릭시 해당 클러스터에 속한 기사만 select
 @router.get("/{cid}/news/", response_model=List[EventWithNews], status_code=status.HTTP_200_OK)
 async def get_cluster_list(
         cid : int,
