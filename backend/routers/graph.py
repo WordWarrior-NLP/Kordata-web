@@ -69,8 +69,8 @@ async def get_graph_data(
                 edge_id += 1
                 entity_to_event = Edge(edge_id, entity_key, output[0].data['id'])
                 output.append(entity_to_event)
-        else:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
 
     if news_data:
         for news in news_data:
