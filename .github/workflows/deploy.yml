@@ -69,4 +69,4 @@ jobs:
           # docker rm $(docker ps -a -q)
           docker pull ${{ secrets.DOCKERHUB_USERNAME }}/backend:latest
           docker pull ${{ secrets.DOCKERHUB_USERNAME }}/frontend:latest
-          docker-compose up
+          docker-compose up -d
