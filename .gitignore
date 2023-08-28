@@ -23,6 +23,7 @@ site_build
 venv
 docs.zip
 archive.zip
+.svelte-kit
 
 # vim temporary files
 *~
