@@ -137,6 +137,14 @@ style:{
 }
 },
 {
+selector: 'edge:selected',
+style:{
+  'width' : 15,
+  'line-opacity' : 1,
+  'z-index' : 30,
+}
+},
+{
   selector:'node.hide',
   style:{
       display : 'none'
