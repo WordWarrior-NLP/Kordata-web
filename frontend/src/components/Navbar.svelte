@@ -7,7 +7,9 @@
 <!-- Navigation-->
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNav">
     <div class="container">
-        <Link class="navbar-brand" to="/"><img src="./src/assets/img/homeLogo.png" alt="..." /></Link>
+        <Link class="navbar-brand" to="/">
+            <img src="./src/assets/img/homeNewsenseLogo.png" alt="..." id="logo"/>
+        </Link>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
             Menu
             <i class="fas fa-bars ms-1"></i>
@@ -21,3 +23,10 @@
         </div>
     </div>
 </nav>
+<style>
+    #logo{
+        width : 10rem;
+        height: 2rem;
+        object-fit: cover;
+    }
+</style>
