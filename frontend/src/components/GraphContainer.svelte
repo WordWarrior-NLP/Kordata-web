@@ -102,29 +102,26 @@ async function get_event(){
         wheelSensitivity : 0.3,
       });
 
-      graphCy.on("mouseover", "edge", function (e) {
+      graphCy.on("mouseover", "edge", (e) => {
         e.target.addClass("hover");
       });
-      graphCy.on("mouseout", "edge", function (e) {
+      graphCy.on("mouseout", "edge", (e)=> {
         e.target.removeClass("hover");
       });
       //NODE EVENTS
-      graphCy.on("mouseover", "node", function (e) {
+      graphCy.on("mouseover", "node", (e)=> {
         e.target.addClass("hover");
       });
-      graphCy.on("mouseout", "node", function (e) {
+      graphCy.on("mouseout", "node", (e) => {
         e.target.removeClass("hover");
       });
-      graphCy.on("mousedown", "node", function (e) {
+      graphCy.on("mousedown", "node", (e) =>{
         e.target.addClass("hover");
       });
-      graphCy.on("click", "node", function (e) {
-        graphCy.zoom({level:0.8, position: this.position()})
-        graphCy.pan(this.position)
+      graphCy.on("click", "node", (e) => {
+        graphCy.zoom({level:0.8, position: e.target.position()})
+        graphCy.panBy(e.target.position)
       });
-      graphCy.on("click", "node[level=1]", function(e){
-          e.target.data("id")
-      })
     } catch (error) {
       console.error("Error setting visibility:", error);
     }
@@ -142,10 +139,6 @@ async function setVisible(){
       console.error("Error fetching main titles:", error);
     }
     graphCy.nodes('node[days]').each(function(node){
-      console.log("v" + value)
-      console.log("d" + $duration)
-      console.log("days" + node.data('days'))
-
       if(node.data("days") < value){
         if(!(node.hasClass("hide"))){
           node.addClass("hide");

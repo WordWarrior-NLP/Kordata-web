@@ -108,6 +108,7 @@ style: {
   'source-endpoint' : 'outside-to-node-or-label',
   'source-arrow-shape': 'vee',
   'line-opacity' : 0.5,
+  'line-color' : '#808080'
 }
 },
 {
@@ -133,14 +134,6 @@ style:{
   'width' : 10,
   'line-opacity' : 0.7,
   'z-index' : 10
-}
-},
-{
-selector: 'edge:selected',
-style:{
-  'width' : 15,
-  'line-opacity' : 0.8,
-  'z-index' : 30,
 }
 },
 {
